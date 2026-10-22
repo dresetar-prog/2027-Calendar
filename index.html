@@ -22,7 +22,7 @@
       font-family: 'Space Grotesk', sans-serif;
     }
     .roadmap-canvas {
-      min-width: 1200px;
+      min-width: 1250px;
       user-select: none;
     }
     .month-col {
@@ -33,17 +33,19 @@
     }
     .swimlane-row {
       border-bottom: 1.5px solid #cbd5e1;
-      min-height: 82px;
+      min-height: 86px;
       position: relative;
     }
     .swimlane-row:last-child {
       border-bottom: none;
     }
+    /* Draggable Milestone Card */
     .milestone-chip {
       position: absolute;
       transition: box-shadow 0.15s ease, transform 0.15s ease;
       cursor: grab;
       z-index: 10;
+      white-space: nowrap;
     }
     .milestone-chip:active {
       cursor: grabbing;
@@ -54,6 +56,7 @@
     .milestone-chip:hover {
       z-index: 20;
     }
+    /* Print / Slide Export View */
     @media print {
       .no-print {
         display: none !important;
@@ -89,7 +92,7 @@
 <body class="p-4 md:p-8 flex flex-col items-center min-h-screen">
 
   <!-- Main Application Header & Controls -->
-  <header class="w-full max-w-[1400px] mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
+  <header class="w-full max-w-[1440px] mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
     <div>
       <div class="flex items-center gap-3">
         <span class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-md">
@@ -157,15 +160,15 @@
   </header>
 
   <!-- Notification Banner for Detected Issues -->
-  <div id="issueBanner" class="w-full max-w-[1400px] mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 flex items-start gap-3 shadow-sm no-print">
+  <div id="issueBanner" class="w-full max-w-[1440px] mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 flex items-start gap-3 shadow-sm no-print">
     <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mt-0.5"></i>
     <div class="flex-1">
       <div class="font-bold flex items-center gap-2">
         <span>Considerations</span>
-        <span class="bg-amber-200 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-semibold">notes</span>
+        <span class="bg-amber-200 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-semibold">Holidays/span>
       </div>
       <p class="text-amber-800 mt-0.5 leading-relaxed">
-        1. <strong>Holidays:</strong> <span class="underline">Thanksgiving Break</span> (Nov 22–26)
+        1. <strong>Breaks:</strong> <span class="underline">Thanksgiving Break</span> (Nov 22–26)
       </p>
     </div>
     <button onclick="document.getElementById('issueBanner').classList.add('hidden')" class="text-amber-600 hover:text-amber-800">
@@ -173,8 +176,8 @@
     </button>
   </div>
 
-  <!-- ROADMAP BOARD WRAPPER (Slide Aspect Ratio: 16:9 Canvas) -->
-  <div class="w-full max-w-[1400px] overflow-x-auto pb-4">
+  <!-- ROADMAP BOARD WRAPPER -->
+  <div class="w-full max-w-[1440px] overflow-x-auto pb-6">
     <div id="roadmapSlide" class="roadmap-wrapper bg-white border border-slate-300 rounded-2xl shadow-xl p-6 md:p-8 roadmap-canvas mx-auto relative select-none">
       
       <!-- Chart Title Matching Original Presentation Image -->
@@ -184,48 +187,48 @@
         </h2>
       </div>
 
-      <!-- Main Swimlane Grid Table -->
-      <div class="relative border-t-2 border-l-2 border-r-2 border-b-2 border-slate-900 rounded-lg overflow-hidden bg-white">
+      <!-- Main Swimlane Grid Table (Clean border, NO overflow-hidden clipping) -->
+      <div class="relative border-2 border-slate-900 rounded-lg bg-white">
         
         <!-- Header Row (Months) -->
-        <div class="grid grid-cols-[180px_repeat(12,_1fr)] border-b-2 border-slate-900 bg-slate-50 text-[13px] font-bold text-slate-800 text-center select-none">
+        <div class="grid grid-cols-[180px_repeat(12,_1fr)] border-b-2 border-slate-900 bg-slate-50 text-[13px] font-bold text-slate-800 text-center select-none rounded-t-md overflow-hidden">
           <div class="p-3 border-r-2 border-slate-900 flex items-center justify-center font-display uppercase tracking-wider text-xs text-slate-500 bg-slate-100">
             Programs
           </div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Jan 2027</div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Feb 2027</div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Mar 2027</div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Apr 2027</div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">May 2027</div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Jun 2027</div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Jul 2027</div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Aug 2027</div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Sep 2027</div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Oct 2027</div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Nov 2027</div>
-          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Dec 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">Jan 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">Feb 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">Mar 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">Apr 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">May 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">Jun 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">Jul 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">Aug 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">Sep 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">Oct 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">Nov 2027</div>
+          <div class="p-2.5 month-col flex items-center justify-center">Dec 2027</div>
         </div>
 
         <!-- Swimlane Rows Container -->
         <div id="swimlanesBody" class="divide-y divide-slate-300">
-          <!-- Swimlanes will be dynamically injected by JavaScript -->
+          <!-- Swimlanes dynamically injected -->
         </div>
 
-        <!-- Footer Month Markers (Bottom Legend Line mirroring top) -->
-        <div class="grid grid-cols-[180px_repeat(12,_1fr)] border-t-2 border-slate-900 bg-slate-50 text-[11px] font-semibold text-slate-600 text-center select-none">
+        <!-- Footer Month Markers -->
+        <div class="grid grid-cols-[180px_repeat(12,_1fr)] border-t-2 border-slate-900 bg-slate-50 text-[11px] font-semibold text-slate-600 text-center select-none rounded-b-md overflow-hidden">
           <div class="p-2 border-r-2 border-slate-900 bg-slate-100"></div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Jan 2027</div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Feb 2027</div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Mar 2027</div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Apr 2027</div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">May 2027</div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Jun 2027</div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Jul 2027</div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Aug 2027</div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Sep 2027</div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Oct 2027</div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Nov 2027</div>
-          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Dec 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">Jan 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">Feb 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">Mar 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">Apr 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">May 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">Jun 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">Jul 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">Aug 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">Sep 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">Oct 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">Nov 2027</div>
+          <div class="p-2 month-col flex items-center justify-center">Dec 2027</div>
         </div>
 
       </div>
@@ -239,7 +242,7 @@
           <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span> SIFP Press Event</span>
         </div>
         <div class="text-[11px] text-slate-400">
-          Sawm
+          Executive Presentation Slide • Precision Boundary Engine
         </div>
       </div>
 
@@ -337,7 +340,6 @@
 
   <!-- SCRIPT ENGINE -->
   <script>
-    // 2027 Calendar Day-Count & Coordinate Utilities (365 days)
     const DAYS_IN_MONTH_2027 = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     const MONTH_STARTS_2027 = [0];
     for (let i = 0; i < 11; i++) {
@@ -361,7 +363,6 @@
       return date.toLocaleDateString("en-US", { month: "short", day: "2-digit" });
     }
 
-    // Swimlane Definitions
     const SWIMLANES = [
       { id: "fastpath", name: "FastPath<br>Program", height: "min-h-[96px]" },
       { id: "passport", name: "Passport<br>Community<br>Program", height: "min-h-[88px]" },
@@ -373,116 +374,47 @@
       { id: "wpo", name: "WPO<br>Event", height: "min-h-[80px]" }
     ];
 
-    // Master Initial Dataset (Directly from TSV with verified fixes and your updated wording)
     const INITIAL_MILESTONES = [
-      // FastPath Program
-      {
-        id: "fp-1",
-        lane: "fastpath",
-        title: "Spring FastPath Start",
-        date: "2027-04-19",
-        location: "",
-        color: "#16a34a",
-        row: "top",
-        style: "solid"
-      },
-      {
-        id: "fp-2",
-        lane: "fastpath",
-        title: "Spring FastPath Pitch",
-        date: "2027-06-03",
-        location: "San Diego",
-        color: "#dc2626",
-        row: "bottom",
-        style: "solid",
-        isCorrected: true,
-        correctionNote: "Corrected from May to early June (Jun 03) based on TSV"
-      },
-      {
-        id: "fp-3",
-        lane: "fastpath",
-        title: "Fall FastPath Start",
-        date: "2027-10-11",
-        location: "",
-        color: "#16a34a",
-        row: "top",
-        style: "solid"
-      },
-      {
-        id: "fp-pause",
-        lane: "fastpath",
-        title: "Thanksgiving Break",
-        date: "2027-11-22",
-        endDate: "2027-11-26",
-        location: "Pause",
-        color: "#d97706",
-        row: "top",
-        style: "break",
-        isRestored: true,
-        correctionNote: "Restored missing 5-day scheduled pause from ClickUp TSV"
-      },
-      {
-        id: "fp-4",
-        lane: "fastpath",
-        title: "Fall FastPath Pitch",
-        date: "2027-12-09",
-        location: "San Diego",
-        color: "#dc2626",
-        row: "bottom",
-        style: "solid"
-      },
-
-      // Passport Community Program
+      { id: "fp-1", lane: "fastpath", title: "Spring FastPath Start", date: "2027-04-19", location: "", color: "#16a34a", row: "top", style: "solid" },
+      { id: "fp-2", lane: "fastpath", title: "Spring FastPath Pitch", date: "2027-06-03", location: "San Diego", color: "#dc2626", row: "bottom", style: "solid", isCorrected: true },
+      { id: "fp-3", lane: "fastpath", title: "Fall FastPath Start", date: "2027-10-11", location: "", color: "#16a34a", row: "top", style: "solid" },
+      { id: "fp-pause", lane: "fastpath", title: "Thanksgiving Break", date: "2027-11-22", endDate: "2027-11-26", location: "Pause", color: "#d97706", row: "top", style: "break", isRestored: true },
+      { id: "fp-4", lane: "fastpath", title: "Fall FastPath Pitch", date: "2027-12-09", location: "San Diego", color: "#dc2626", row: "bottom", style: "solid" },
       { id: "pc-1", lane: "passport", title: "MC 5", date: "2027-01-12", location: "", color: "#475569", row: "top", style: "solid" },
       { id: "pc-2", lane: "passport", title: "MC 6", date: "2027-03-16", location: "", color: "#475569", row: "bottom", style: "solid" },
       { id: "pc-3", lane: "passport", title: "MC 7", date: "2027-05-18", location: "", color: "#475569", row: "top", style: "solid" },
       { id: "pc-4", lane: "passport", title: "MC 8", date: "2027-07-20", location: "", color: "#475569", row: "bottom", style: "solid" },
       { id: "pc-5", lane: "passport", title: "MC 9", date: "2027-09-21", location: "", color: "#475569", row: "top", style: "solid" },
-
-      // Zebra Program
       { id: "zb-1", lane: "zebra", title: "Zebra Cohort 1", date: "2027-01-21", location: "", color: "#334155", row: "top", style: "solid" },
       { id: "zb-2", lane: "zebra", title: "Zebra Cohort 2", date: "2027-05-20", location: "", color: "#334155", row: "bottom", style: "solid" },
-
-      // Capital Activation Events (CAE)
       { id: "cae-1", lane: "cae", title: "CAE New York City", date: "2027-02-01", location: "", color: "#16a34a", row: "top", style: "solid" },
       { id: "cae-2", lane: "cae", title: "CAE Pittsburgh", date: "2027-04-06", location: "", color: "#16a34a", row: "bottom", style: "solid" },
       { id: "cae-3", lane: "cae", title: "CAE Chicago", date: "2027-05-11", location: "", color: "#16a34a", row: "top", style: "solid" },
       { id: "cae-4", lane: "cae", title: "CAE Twin Cities", date: "2027-08-17", location: "", color: "#16a34a", row: "bottom", style: "solid" },
       { id: "cae-5", lane: "cae", title: "CAE Baltimore", date: "2027-10-05", location: "", color: "#16a34a", row: "top", style: "solid" },
       { id: "cae-6", lane: "cae", title: "CAE San Diego", date: "2027-10-26", location: "", color: "#16a34a", row: "bottom", style: "solid" },
-
-      // RISE Event
       { id: "rise-1", lane: "rise", title: "RISE Chicago", date: "2027-05-06", location: "", color: "#475569", row: "top", style: "solid" },
       { id: "rise-2", lane: "rise", title: "RISE Newark", date: "2027-07-08", location: "", color: "#2563eb", row: "bottom", style: "solid" },
       { id: "rise-3", lane: "rise", title: "RISE San Diego", date: "2027-10-21", location: "", color: "#2563eb", row: "bottom", style: "solid" },
       { id: "rise-4", lane: "rise", title: "RISE TBD", date: "2027-12-09", location: "", color: "#92400e", row: "top", style: "solid" },
-
-      // SIFP Grant
       { id: "sifp-1", lane: "sifp", title: "Q4 2026", date: "2027-01-21", location: "", color: "#0284c7", row: "top", style: "solid" },
       { id: "sifp-2", lane: "sifp", title: "Q1 2027", date: "2027-04-22", location: "", color: "#0284c7", row: "bottom", style: "solid" },
       { id: "sifp-3", lane: "sifp", title: "Q2 2027", date: "2027-07-22", location: "", color: "#0284c7", row: "top", style: "solid" },
       { id: "sifp-4", lane: "sifp", title: "Q3 2027", date: "2027-10-28", location: "", color: "#0284c7", row: "bottom", style: "solid" },
-
-      // National Grant
       { id: "nat-1", lane: "national", title: "Kitty Fund", date: "2027-05-04", location: "", color: "#f59e0b", row: "top", style: "solid" },
       { id: "nat-2", lane: "national", title: "Pride Fund", date: "2027-06-29", location: "", color: "#f59e0b", row: "bottom", style: "solid" },
       { id: "nat-3", lane: "national", title: "Veterans", date: "2027-11-09", location: "", color: "#d97706", row: "top", style: "solid" },
-
-      // WPO Event
       { id: "wpo-1", lane: "wpo", title: "WPO Summit", date: "2027-05-12", location: "Palm Springs", color: "#78350f", row: "top", style: "solid" }
     ];
 
-    // State
     let milestones = JSON.parse(localStorage.getItem('roadmap_milestones_2027')) || [...INITIAL_MILESTONES];
     let highlightFixes = false;
     let showThanksgiving = true;
 
-    // Save to local storage
     function persistState() {
       localStorage.setItem('roadmap_milestones_2027', JSON.stringify(milestones));
     }
 
-    // Master Revert Action
     function revertToOriginal() {
       if (confirm("Revert all milestones back to original dates and positions?")) {
         localStorage.removeItem('roadmap_milestones_2027');
@@ -492,7 +424,6 @@
       }
     }
 
-    // Render the Complete Swimlane Board
     function renderBoard() {
       const container = document.getElementById("swimlanesBody");
       container.innerHTML = "";
@@ -530,11 +461,21 @@
           const leftPercent = dayOfYearToPercentage(day);
 
           const chip = document.createElement("div");
-          chip.className = `milestone-chip pointer-events-auto flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs shadow-sm bg-white cursor-pointer select-none transition-all`;
+          chip.className = `milestone-chip pointer-events-auto flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs shadow-sm bg-white cursor-pointer select-none`;
           chip.dataset.id = item.id;
 
           const verticalOffset = item.row === "bottom" ? "bottom: 10px;" : "top: 10px;";
-          chip.style = `left: ${Math.min(Math.max(leftPercent, 0.5), 92)}%; ${verticalOffset}`;
+
+          // Boundary-Aware Anchor Logic:
+          // If in the last 20% of the year (late Q4 / Dec), flip card leftwards so dot remains on the exact date and text never cuts off.
+          const isNearRightEdge = leftPercent > 79;
+
+          if (isNearRightEdge) {
+            chip.style = `left: ${Math.min(leftPercent, 98.8)}%; ${verticalOffset} transform: translateX(-100%);`;
+            chip.classList.add("flex-row-reverse");
+          } else {
+            chip.style = `left: ${Math.max(leftPercent, 0.4)}%; ${verticalOffset}`;
+          }
 
           if (item.style === "break") {
             chip.className += " border-dashed border-amber-400 bg-amber-50/90 text-amber-950 font-medium";
@@ -555,7 +496,7 @@
           }
 
           const textWrap = document.createElement("div");
-          textWrap.className = "leading-tight text-left";
+          textWrap.className = `leading-tight ${isNearRightEdge ? 'text-right' : 'text-left'}`;
 
           const titleSpan = document.createElement("div");
           titleSpan.className = "font-semibold text-slate-800 text-[11px] whitespace-nowrap";
@@ -594,7 +535,6 @@
       });
     }
 
-    // Drag-and-Drop Date Positioning
     function makeDraggable(element, item) {
       let isDragging = false;
       let startX = 0;
@@ -612,7 +552,7 @@
           if (!isDragging) return;
           const deltaX = ev.clientX - startX;
           const deltaPercent = (deltaX / rect.width) * 100;
-          let newLeft = Math.max(0.2, Math.min(94, startLeft + deltaPercent));
+          let newLeft = Math.max(0.2, Math.min(99, startLeft + deltaPercent));
           element.style.left = `${newLeft}%`;
         }
 
@@ -648,7 +588,6 @@
       });
     }
 
-    // Modal Operations
     const modal = document.getElementById("milestoneModal");
     const form = document.getElementById("milestoneForm");
 
@@ -726,10 +665,8 @@
       }
     };
 
-    // Revert Button Listener
     document.getElementById("revertOriginalBtn").onclick = revertToOriginal;
 
-    // Toggle Discrepancy Highlights
     const toggleFixesBtn = document.getElementById("toggleFixesBtn");
     toggleFixesBtn.onclick = () => {
       highlightFixes = !highlightFixes;
@@ -737,7 +674,6 @@
       renderBoard();
     };
 
-    // Toggle Thanksgiving Break
     const toggleBreakBtn = document.getElementById("toggleBreakBtn");
     toggleBreakBtn.onclick = () => {
       showThanksgiving = !showThanksgiving;
@@ -745,7 +681,6 @@
       renderBoard();
     };
 
-    // Slide / Presentation Mode
     const presBtn = document.getElementById("presentationModeBtn");
     presBtn.onclick = () => {
       const slide = document.getElementById("roadmapSlide");
@@ -758,7 +693,6 @@
       }
     };
 
-    // Export Dropdown
     const exportBtn = document.getElementById("exportDropdownBtn");
     const exportMenu = document.getElementById("exportMenu");
     exportBtn.onclick = (e) => {
@@ -767,12 +701,10 @@
     };
     window.onclick = () => exportMenu.classList.add("hidden");
 
-    // Print / PDF
     document.getElementById("printPdfBtn").onclick = () => {
       window.print();
     };
 
-    // Export to TSV
     document.getElementById("exportTsvBtn").onclick = () => {
       let tsvContent = "Program\tTitle\tStart Date\tLocation\tIndicator Color\n";
       milestones.forEach(m => {
@@ -785,10 +717,8 @@
       link.click();
     };
 
-    // Reset Data in dropdown
     document.getElementById("resetDataBtn").onclick = revertToOriginal;
 
-    // Initial Render
     renderBoard();
   </script>
 </body>
