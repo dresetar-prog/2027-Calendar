@@ -99,8 +99,8 @@
           <i class="fa-solid fa-timeline text-lg"></i>
         </span>
         <div>
-          <h1 class="text-2xl font-bold tracking-tight text-slate-900">Calendar Planner (2027)</h1>
-          <p class="text-sm text-slate-500 font-medium">Drag milestones to modify</p>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900">2027 Calendar Planner (2027)</h1>
+          <p class="text-sm text-slate-500 font-medium">Click or drag milestone to modify</p>
         </div>
       </div>
     </div>
@@ -119,10 +119,10 @@
         <span id="fixesBtnText">Show Discrepancy</span>
       </button>
 
-      <!-- Thanksgiving Break Toggle -->
-      <button id="toggleBreakBtn" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition shadow-sm">
+      <!-- Holidays Toggle (Replaced Thanksgiving Toggle) -->
+      <button id="toggleHolidaysBtn" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition shadow-sm">
         <i class="fa-solid fa-mug-hot text-orange-500"></i>
-        <span id="breakBtnText">Hide Thanksgiving Break</span>
+        <span id="holidaysBtnText">Show Holidays</span>
       </button>
 
       <!-- Add Milestone -->
@@ -164,11 +164,12 @@
     <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mt-0.5"></i>
     <div class="flex-1">
       <div class="font-bold flex items-center gap-2">
-        <span>Considerations</span>
-        <span class="bg-amber-200 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-semibold">Holidays</span>
+        <span>Adjustments</span>
+        <span class="bg-amber-200 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-semibold">2 Corrections Loaded</span>
       </div>
       <p class="text-amber-800 mt-0.5 leading-relaxed">
-        1. <strong>No Events</strong> <span class="underline">Thanksgiving Break</span> (Nov 22–26)
+        1. <strong>Alignment Fixed:</strong> <span class="underline">Spring FastPath Pitch</span> is on <strong>Jun 03</strong> and is now accurately anchored in the June column (was incorrectly plotted in May).<br>
+        2. <strong>Missing Item Restored:</strong> <span class="underline">Thanksgiving Break</span> and <span class="underline">Christmas Break</span> have been added. They are hidden by default to prevent overlap.
       </p>
     </div>
     <button onclick="document.getElementById('issueBanner').classList.add('hidden')" class="text-amber-600 hover:text-amber-800">
@@ -183,11 +184,11 @@
       <!-- Chart Title Matching Original Presentation Image -->
       <div class="text-center mb-6">
         <h2 id="chartMainTitle" class="text-3xl font-extrabold text-slate-900 tracking-tight cursor-pointer hover:bg-slate-50 px-3 py-1 rounded inline-block transition" title="Click to edit title" contenteditable="true">
-          2027
+          Strategic Program Roadmap (2027 Only)
         </h2>
       </div>
 
-      <!-- Main Swimlane Grid Table (Clean border, NO overflow-hidden clipping) -->
+      <!-- Main Swimlane Grid Table -->
       <div class="relative border-2 border-slate-900 rounded-lg bg-white">
         
         <!-- Header Row (Months) -->
@@ -238,11 +239,11 @@
         <div class="flex items-center gap-5">
           <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Program Activation</span>
           <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> Pitch Event</span>
-          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Grant Press Event</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Grant Event</span>
           <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span> SIFP Press Event</span>
         </div>
         <div class="text-[11px] text-slate-400">
-          Founders First - Sawmawn Inc.
+          Executive Presentation Slide • Precision Boundary Engine
         </div>
       </div>
 
@@ -263,6 +264,7 @@
 
       <form id="milestoneForm" class="mt-4 space-y-4">
         <input type="hidden" id="editMilestoneId">
+        <input type="hidden" id="mIsHoliday" value="false">
 
         <div>
           <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Item Title</label>
@@ -276,7 +278,7 @@
               <option value="fastpath">FastPath Program</option>
               <option value="passport">Passport Community Program</option>
               <option value="zebra">Zebra Program</option>
-              <option value="cae">Capital Activation Event (CAE)</option>
+              <option value="cae">Capital Activation Events</option>
               <option value="rise">RISE Event</option>
               <option value="sifp">SIFP Grant</option>
               <option value="national">National Grant</option>
@@ -378,8 +380,12 @@
       { id: "fp-1", lane: "fastpath", title: "Spring FastPath Start", date: "2027-04-19", location: "", color: "#16a34a", row: "top", style: "solid" },
       { id: "fp-2", lane: "fastpath", title: "Spring FastPath Pitch", date: "2027-06-03", location: "San Diego", color: "#dc2626", row: "bottom", style: "solid", isCorrected: true },
       { id: "fp-3", lane: "fastpath", title: "Fall FastPath Start", date: "2027-10-11", location: "", color: "#16a34a", row: "top", style: "solid" },
-      { id: "fp-pause", lane: "fastpath", title: "Thanksgiving Break", date: "2027-11-22", endDate: "2027-11-26", location: "Pause", color: "#d97706", row: "top", style: "break", isRestored: true },
       { id: "fp-4", lane: "fastpath", title: "Fall FastPath Pitch", date: "2027-12-09", location: "San Diego", color: "#dc2626", row: "bottom", style: "solid" },
+      
+      // Holidays (Hidden by Default)
+      { id: "fp-pause", lane: "fastpath", title: "Thanksgiving Break", date: "2027-11-22", endDate: "2027-11-26", location: "Pause", color: "#d97706", row: "top", style: "break", isRestored: true, isHoliday: true },
+      { id: "fp-xmas", lane: "fastpath", title: "Christmas Break", date: "2027-12-20", endDate: "2027-12-24", location: "Pause", color: "#d97706", row: "top", style: "break", isRestored: true, isHoliday: true },
+      
       { id: "pc-1", lane: "passport", title: "MC 5", date: "2027-01-12", location: "", color: "#475569", row: "top", style: "solid" },
       { id: "pc-2", lane: "passport", title: "MC 6", date: "2027-03-16", location: "", color: "#475569", row: "bottom", style: "solid" },
       { id: "pc-3", lane: "passport", title: "MC 7", date: "2027-05-18", location: "", color: "#475569", row: "top", style: "solid" },
@@ -409,7 +415,7 @@
 
     let milestones = JSON.parse(localStorage.getItem('roadmap_milestones_2027')) || [...INITIAL_MILESTONES];
     let highlightFixes = false;
-    let showThanksgiving = true;
+    let showHolidays = false; // Hide holidays by default to prevent overlap
 
     function persistState() {
       localStorage.setItem('roadmap_milestones_2027', JSON.stringify(milestones));
@@ -452,7 +458,7 @@
 
         const laneItems = milestones.filter(m => {
           if (m.lane !== lane.id) return false;
-          if (m.id === "fp-pause" && !showThanksgiving) return false;
+          if (m.isHoliday && !showHolidays) return false;
           return true;
         });
 
@@ -466,8 +472,7 @@
 
           const verticalOffset = item.row === "bottom" ? "bottom: 10px;" : "top: 10px;";
 
-          // Boundary-Aware Anchor Logic:
-          // If in the last 20% of the year (late Q4 / Dec), flip card leftwards so dot remains on the exact date and text never cuts off.
+          // Boundary-Aware Anchor Logic
           const isNearRightEdge = leftPercent > 79;
 
           if (isNearRightEdge) {
@@ -478,9 +483,9 @@
           }
 
           if (item.style === "break") {
-            chip.className += " border-dashed border-amber-400 bg-amber-50/90 text-amber-950 font-medium";
+            chip.className += " border-dashed border-amber-400 bg-amber-50/90 text-amber-950 font-medium z-0";
           } else {
-            chip.className += " border-slate-300 hover:border-slate-400";
+            chip.className += " border-slate-300 hover:border-slate-400 z-10";
           }
 
           if (highlightFixes && (item.isCorrected || item.isRestored)) {
@@ -594,6 +599,7 @@
     function openEditModal(item) {
       document.getElementById("modalTitle").innerHTML = `<i class="fa-solid fa-pen-to-square text-indigo-600"></i> Edit Milestone`;
       document.getElementById("editMilestoneId").value = item.id;
+      document.getElementById("mIsHoliday").value = item.isHoliday || false;
       document.getElementById("mTitle").value = item.title;
       document.getElementById("mLane").value = item.lane;
       document.getElementById("mDate").value = item.date;
@@ -609,6 +615,7 @@
     function openNewModal() {
       document.getElementById("modalTitle").innerHTML = `<i class="fa-solid fa-plus text-indigo-600"></i> Add New Milestone`;
       document.getElementById("editMilestoneId").value = "";
+      document.getElementById("mIsHoliday").value = "false";
       document.getElementById("mTitle").value = "";
       document.getElementById("mLane").value = "fastpath";
       document.getElementById("mDate").value = "2027-06-15";
@@ -639,15 +646,16 @@
       const color = document.getElementById("mColor").value;
       const row = document.getElementById("mRow").value;
       const style = document.getElementById("mStyle").value;
+      const isHoliday = document.getElementById("mIsHoliday").value === "true";
 
       if (id) {
         const idx = milestones.findIndex(m => m.id === id);
         if (idx !== -1) {
-          milestones[idx] = { ...milestones[idx], title, lane, date, location, color, row, style };
+          milestones[idx] = { ...milestones[idx], title, lane, date, location, color, row, style, isHoliday };
         }
       } else {
         const newId = "m-" + Date.now();
-        milestones.push({ id: newId, title, lane, date, location, color, row, style });
+        milestones.push({ id: newId, title, lane, date, location, color, row, style, isHoliday: false });
       }
 
       persistState();
@@ -674,10 +682,10 @@
       renderBoard();
     };
 
-    const toggleBreakBtn = document.getElementById("toggleBreakBtn");
-    toggleBreakBtn.onclick = () => {
-      showThanksgiving = !showThanksgiving;
-      document.getElementById("breakBtnText").innerText = showThanksgiving ? "Hide Thanksgiving Break" : "Show Thanksgiving Break";
+    const toggleHolidaysBtn = document.getElementById("toggleHolidaysBtn");
+    toggleHolidaysBtn.onclick = () => {
+      showHolidays = !showHolidays;
+      document.getElementById("holidaysBtnText").innerText = showHolidays ? "Hide Holidays" : "Show Holidays";
       renderBoard();
     };
 
