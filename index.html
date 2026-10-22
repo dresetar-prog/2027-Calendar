@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2027 Program Roadmap</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --col-w: 220px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 24px; min-width: 1300px; user-select: none; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    h1 { font-size: 24px; font-weight: 800; }
+    .controls { display: flex; gap: 8px; }
+    button {
+      background: #0f172a; color: #fff; border: 1px solid #0f172a; padding: 7px 14px;
+      border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    button.secondary { background: #fff; color: #0f172a; border-color: #cbd5e1; }
+    button:hover { opacity: 0.9; }
+
+    .board { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; }
+    .timeline-hdr { display: grid; grid-template-columns: var(--col-w) repeat(12, 1fr); background: #f1f5f9; border-bottom: 2px solid var(--border); }
+    .hdr-cell { padding: 10px 4px; text-align: center; font-size: 12px; font-weight: 700; color: #475569; border-right: 1px solid var(--border); }
+    .hdr-cell:first-child { text-align: left; padding-left: 16px; }
+    .hdr-cell:last-child { border-right: none; }
+
+    .lane { display: grid; grid-template-columns: var(--col-w) 1fr; border-bottom: 1px solid var(--border); min-height: 80px; position: relative; }
+    .lane:last-child { border-bottom: none; }
+    .lane-lbl { background: #f8fafc; border-right: 2px solid var(--border); padding: 12px 16px; font-weight: 700; font-size: 13px; display: flex; align-items: center; color: #1e293b; line-height: 1.3; }
+    .track { position: relative; width: 100%; height: 100%; background: repeating-linear-gradient(to right, transparent, transparent calc(100% / 12 - 1px), var(--border) calc(100% / 12 - 1px), var(--border) calc(100% / 12)); }
+
+    .chip {
+      position: absolute;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      padding: 4px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+      transform: translateX(-50%);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: top 0.2s, box-shadow 0.2s;
+      z-index: 2;
+    }
+    .chip:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.15); z-index: 10; border-color: #94a3b8; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .info { display: flex; flex-direction: column; line-height: 1.15; }
+    .info-title { font-size: 11px; font-weight: 700; }
+    .info-date { font-size: 10px; color: var(--muted); }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+    .modal { background: #fff; border-radius: 8px; width: 360px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .modal h2 { font-size: 16px; margin-bottom: 12px; }
+    .modal label { display: block; font-size: 12px; font-weight: 600; margin: 8px 0 4px; color: var(--muted); }
+    .modal input, .modal select { width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Strategic Program Roadmap (2027 Only)</h1>
+    <div class="controls">
+      <button class="secondary" onclick="exportData()">Export JSON</button>
+      <button class="secondary" onclick="resetDefaults()">Reset Defaults</button>
+      <button onclick="window.print()">Print / PDF</button>
+    </div>
+  </header>
+
+  <div class="board">
+    <div class="timeline-hdr" id="headerRow">
+      <div class="hdr-cell">Program / Track</div>
+    </div>
+    <div id="lanesContainer"></div>
+  </div>
+
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <h2>Edit Milestone</h2>
+      <label>Title</label>
+      <input type="text" id="mTitle" />
+      <label>Date String (Display)</label>
+      <input type="text" id="mDateStr" />
+      <label>Start Date (ISO: YYYY-MM-DD)</label>
+      <input type="date" id="mStart" />
+      <div class="modal-actions">
+        <button class="secondary" onclick="closeModal()">Cancel</button>
+        <button onclick="saveModal()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const LANES = [
+      "FastPath Program", "Passport Community Program", "Zebra Program",
+      "Capital Activation Events", "RISE Event", "SIFP Grant", "National Grant", "WPO Event"
+    ];
+
+    const RAW_EVENTS = [
+      { id:1, lane:"FastPath Program", label:"Spring Cohort 1 Onboarding", dateStr:"Apr 19", start:"2027-04-19", dot:"#16a34a" },
+      { id:2, lane:"FastPath Program", label:"Spring Cohort 1 Pitch", dateStr:"Jun 03 | San Diego", start:"2027-06-03", dot:"#dc2626" },
+      { id:3, lane:"FastPath Program", label:"Fall Cohort 2 Onboarding", dateStr:"Oct 11", start:"2027-10-11", dot:"#16a34a" },
+      { id:4, lane:"FastPath Program", label:"Thanksgiving Break", dateStr:"Nov 22 - Nov 26", start:"2027-11-22", dot:"#94a3b8" },
+      { id:5, lane:"FastPath Program", label:"Fall Cohort 2 Pitch", dateStr:"Dec 09 | San Diego", start:"2027-12-09", dot:"#dc2626" },
+      { id:6, lane:"Passport Community Program", label:"MC 5", dateStr:"Jan 12", start:"2027-01-12", dot:"#475569" },
+      { id:7, lane:"Passport Community Program", label:"MC 6", dateStr:"Mar 16", start:"2027-03-16", dot:"#475569" },
+      { id:8, lane:"Passport Community Program", label:"MC 7", dateStr:"May 18", start:"2027-05-18", dot:"#475569" },
+      { id:9, lane:"Passport Community Program", label:"MC 8", dateStr:"Jul 20", start:"2027-07-20", dot:"#475569" },
+      { id:10, lane:"Passport Community Program", label:"MC 9", dateStr:"Sep 21", start:"2027-09-21", dot:"#475569" },
+      { id:11, lane:"Zebra Program", label:"Zebra Cohort 1", dateStr:"Jan 21", start:"2027-01-21", dot:"#334155" },
+      { id:12, lane:"Zebra Program", label:"Zebra Cohort 2", dateStr:"May 20", start:"2027-05-20", dot:"#334155" },
+      { id:13, lane:"Capital Activation Events", label:"CAE New York City", dateStr:"Feb 01", start:"2027-02-01", dot:"#16a34a" },
+      { id:14, lane:"Capital Activation Events", label:"CAE Pittsburgh", dateStr:"Apr 06", start:"2027-04-06", dot:"#16a34a" },
+      { id:15, lane:"Capital Activation Events", label:"CAE Chicago", dateStr:"May 11", start:"2027-05-11", dot:"#16a34a" },
+      { id:16, lane:"Capital Activation Events", label:"CAE Twin Cities", dateStr:"Aug 17", start:"2027-08-17", dot:"#16a34a" },
+      { id:17, lane:"Capital Activation Events", label:"CAE Baltimore", dateStr:"Oct 05", start:"2027-10-05", dot:"#16a34a" },
+      { id:18, lane:"Capital Activation Events", label:"CAE San Diego", dateStr:"Oct 26", start:"2027-10-26", dot:"#16a34a" },
+      { id:19, lane:"RISE Event", label:"RISE Chicago", dateStr:"May 06", start:"2027-05-06", dot:"#475569" },
+      { id:20, lane:"RISE Event", label:"RISE Newark", dateStr:"Jul 08", start:"2027-07-08", dot:"#475569" },
+      { id:21, lane:"RISE Event", label:"RISE San Diego", dateStr:"Oct 21", start:"2027-10-21", dot:"#475569" },
+      { id:22, lane:"RISE Event", label:"RISE TBD", dateStr:"Dec 09", start:"2027-12-09", dot:"#a16207" },
+      { id:23, lane:"SIFP Grant", label:"Q4 2026", dateStr:"Jan 21", start:"2027-01-21", dot:"#2563eb" },
+      { id:24, lane:"SIFP Grant", label:"Q1 2027", dateStr:"Apr 22", start:"2027-04-22", dot:"#2563eb" },
+      { id:25, lane:"SIFP Grant", label:"Q2 2027", dateStr:"Jul 22", start:"2027-07-22", dot:"#2563eb" },
+      { id:26, lane:"SIFP Grant", label:"Q3 2027", dateStr:"Oct 28", start:"2027-10-28", dot:"#2563eb" },
+      { id:27, lane:"National Grant", label:"Kitty Fund", dateStr:"May 04", start:"2027-05-04", dot:"#ea580c" },
+      { id:28, lane:"National Grant", label:"Pride Fund", dateStr:"Jun 29", start:"2027-06-29", dot:"#ea580c" },
+      { id:29, lane:"National Grant", label:"Veterans", dateStr:"Nov 09", start:"2027-11-09", dot:"#ea580c" },
+      { id:30, lane:"WPO Event", label:"WPO Summit", dateStr:"May 12 | Palm Springs", start:"2027-05-12", dot:"#854d0e" }
+    ];
+
+    let events = JSON.parse(localStorage.getItem('2027_calendar_events')) || RAW_EVENTS;
+    let activeId = null;
+
+    function init() {
+      // Build Headers
+      const hdr = document.getElementById('headerRow');
+      MONTHS.forEach(m => {
+        const d = document.createElement('div');
+        d.className = 'hdr-cell';
+        d.textContent = `${m} 2027`;
+        hdr.appendChild(d);
+      });
+
+      render();
+    }
+
+    function calculateOffset(isoDate) {
+      const start = new Date('2027-01-01T00:00:00Z').getTime();
+      const end = new Date('2027-12-31T23:59:59Z').getTime();
+      const cur = new Date(isoDate + 'T12:00:00Z').getTime();
+      return Math.min(Math.max(((cur - start) / (end - start)) * 100, 0), 100);
+    }
+
+    function render() {
+      const container = document.getElementById('lanesContainer');
+      container.innerHTML = '';
+
+      LANES.forEach(laneName => {
+        const laneEl = document.createElement('div');
+        laneEl.className = 'lane';
+
+        const title = document.createElement('div');
+        title.className = 'lane-lbl';
+        title.innerHTML = laneName.replace(/ /g, '<br>');
+        laneEl.appendChild(title);
+
+        const track = document.createElement('div');
+        track.className = 'track';
+
+        // Filter and sort events for anti-collision
+        const laneEvents = events
+          .filter(e => e.lane === laneName)
+          .sort((a,b) => new Date(a.start) - new Date(b.start));
+
+        laneEvents.forEach((ev, idx) => {
+          const offset = calculateOffset(ev.start);
+          const chip = document.createElement('div');
+          chip.className = 'chip';
+          chip.style.left = `${offset}%`;
+
+          // Dynamic Stagger Algorithm
+          let topOffset = 22; // default center
+          if (idx > 0) {
+            const prevOffset = calculateOffset(laneEvents[idx - 1].start);
+            if (offset - prevOffset < 8.5) {
+              topOffset = (idx % 2 === 0) ? 8 : 42;
+            }
+          }
+          chip.style.top = `${topOffset}px`;
+
+          chip.innerHTML = `
+            <div class="dot" style="background: ${ev.dot}"></div>
+            <div class="info">
+              <span class="info-title">${ev.label}</span>
+              <span class="info-date">${ev.dateStr}</span>
+            </div>
+          `;
+          chip.onclick = () => openModal(ev.id);
+          track.appendChild(chip);
+        });
+
+        laneEl.appendChild(track);
+        container.appendChild(laneEl);
+      });
+    }
+
+    function openModal(id) {
+      activeId = id;
+      const ev = events.find(e => e.id === id);
+      document.getElementById('mTitle').value = ev.label;
+      document.getElementById('mDateStr').value = ev.dateStr;
+      document.getElementById('mStart').value = ev.start;
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('editModal').style.display = 'none';
+      activeId = null;
+    }
+
+    function saveModal() {
+      const ev = events.find(e => e.id === activeId);
+      ev.label = document.getElementById('mTitle').value;
+      ev.dateStr = document.getElementById('mDateStr').value;
+      ev.start = document.getElementById('mStart').value;
+      localStorage.setItem('2027_calendar_events', JSON.stringify(events));
+      closeModal();
+      render();
+    }
+
+    function resetDefaults() {
+      localStorage.removeItem('2027_calendar_events');
+      events = JSON.parse(JSON.stringify(RAW_EVENTS));
+      render();
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify(events, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '2027-calendar-events.json';
+      a.click();
+    }
+
+    init();
+  </script>
+</body>
+</html>
