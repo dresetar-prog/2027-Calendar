@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> 2027 Calendar Planner</title>
+  <title>2027 Calendar Planner</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts -->
@@ -21,7 +21,6 @@
     .font-display {
       font-family: 'Space Grotesk', sans-serif;
     }
-    /* Grid & Board styles */
     .roadmap-canvas {
       min-width: 1200px;
       user-select: none;
@@ -40,7 +39,6 @@
     .swimlane-row:last-child {
       border-bottom: none;
     }
-    /* Draggable Milestone Card */
     .milestone-chip {
       position: absolute;
       transition: box-shadow 0.15s ease, transform 0.15s ease;
@@ -56,7 +54,6 @@
     .milestone-chip:hover {
       z-index: 20;
     }
-    /* Print / Slide Export View */
     @media print {
       .no-print {
         display: none !important;
@@ -72,7 +69,6 @@
         margin: 0 !important;
       }
     }
-    /* Custom scrollbars */
     ::-webkit-scrollbar {
       height: 8px;
       width: 8px;
@@ -108,6 +104,12 @@
 
     <!-- Action Toolbar -->
     <div class="flex flex-wrap items-center gap-2">
+      <!-- Revert to Original Dates & Spots Button -->
+      <button id="revertOriginalBtn" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 transition shadow-sm" title="Reset all milestones to baseline schedule">
+        <i class="fa-solid fa-rotate-left text-rose-600"></i>
+        <span>Revert to Original Dates</span>
+      </button>
+
       <!-- Highlight Fixes Toggle -->
       <button id="toggleFixesBtn" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 transition shadow-sm">
         <i class="fa-solid fa-circle-exclamation text-amber-600"></i>
@@ -179,7 +181,7 @@
       <!-- Chart Title Matching Original Presentation Image -->
       <div class="text-center mb-6">
         <h2 id="chartMainTitle" class="text-3xl font-extrabold text-slate-900 tracking-tight cursor-pointer hover:bg-slate-50 px-3 py-1 rounded inline-block transition" title="Click to edit title" contenteditable="true">
-         2027
+          Strategic Program Roadmap (2027 Only)
         </h2>
       </div>
 
@@ -372,7 +374,7 @@
       { id: "wpo", name: "WPO<br>Event", height: "min-h-[80px]" }
     ];
 
-    // Master Initial Dataset (Directly from TSV with verified fixes)
+    // Master Initial Dataset (Directly from TSV with verified fixes and your updated wording)
     const INITIAL_MILESTONES = [
       // FastPath Program
       {
@@ -381,7 +383,7 @@
         title: "Spring FastPath Start",
         date: "2027-04-19",
         location: "",
-        color: "#16a34a", // Green
+        color: "#16a34a",
         row: "top",
         style: "solid"
       },
@@ -389,9 +391,9 @@
         id: "fp-2",
         lane: "fastpath",
         title: "Spring FastPath Pitch",
-        date: "2027-06-03", // Corrected to early June!
+        date: "2027-06-03",
         location: "San Diego",
-        color: "#dc2626", // Red
+        color: "#dc2626",
         row: "bottom",
         style: "solid",
         isCorrected: true,
@@ -403,7 +405,7 @@
         title: "Fall FastPath Start",
         date: "2027-10-11",
         location: "",
-        color: "#16a34a", // Green
+        color: "#16a34a",
         row: "top",
         style: "solid"
       },
@@ -414,7 +416,7 @@
         date: "2027-11-22",
         endDate: "2027-11-26",
         location: "Pause",
-        color: "#d97706", // Amber
+        color: "#d97706",
         row: "top",
         style: "break",
         isRestored: true,
@@ -426,7 +428,7 @@
         title: "Fall FastPath Pitch",
         date: "2027-12-09",
         location: "San Diego",
-        color: "#dc2626", // Red
+        color: "#dc2626",
         row: "bottom",
         style: "solid"
       },
@@ -481,39 +483,43 @@
       localStorage.setItem('roadmap_milestones_2027', JSON.stringify(milestones));
     }
 
+    // Master Revert Action
+    function revertToOriginal() {
+      if (confirm("Revert all milestones back to original dates and positions?")) {
+        localStorage.removeItem('roadmap_milestones_2027');
+        milestones = JSON.parse(JSON.stringify(INITIAL_MILESTONES));
+        persistState();
+        renderBoard();
+      }
+    }
+
     // Render the Complete Swimlane Board
     function renderBoard() {
       const container = document.getElementById("swimlanesBody");
       container.innerHTML = "";
 
       SWIMLANES.forEach((lane) => {
-        // Create Swimlane Row
         const rowEl = document.createElement("div");
         rowEl.className = `grid grid-cols-[180px_1fr] swimlane-row ${lane.height} relative group`;
         rowEl.dataset.laneId = lane.id;
 
-        // Lane Label Column
         const labelCol = document.createElement("div");
         labelCol.className = "p-3 border-r-2 border-slate-900 font-bold text-slate-800 text-[13px] flex items-center justify-end text-right pr-4 bg-slate-50/70 select-none leading-snug";
         labelCol.innerHTML = lane.name;
         rowEl.appendChild(labelCol);
 
-        // Timeline Area (12 columns background grid)
         const timelineArea = document.createElement("div");
         timelineArea.className = "relative h-full grid grid-cols-12 w-full";
         
-        // 12 column guides
         for (let m = 0; m < 12; m++) {
           const colGuide = document.createElement("div");
           colGuide.className = "month-col h-full";
           timelineArea.appendChild(colGuide);
         }
 
-        // Overlay Container for Plotted Milestones
         const chipsContainer = document.createElement("div");
         chipsContainer.className = "absolute inset-0 pointer-events-none";
 
-        // Filter Milestones for this lane
         const laneItems = milestones.filter(m => {
           if (m.lane !== lane.id) return false;
           if (m.id === "fp-pause" && !showThanksgiving) return false;
@@ -528,23 +534,19 @@
           chip.className = `milestone-chip pointer-events-auto flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs shadow-sm bg-white cursor-pointer select-none transition-all`;
           chip.dataset.id = item.id;
 
-          // Vertical Staggering (Top vs Bottom row within swimlane)
           const verticalOffset = item.row === "bottom" ? "bottom: 10px;" : "top: 10px;";
           chip.style = `left: ${Math.min(Math.max(leftPercent, 0.5), 92)}%; ${verticalOffset}`;
 
-          // Styling Variations
           if (item.style === "break") {
             chip.className += " border-dashed border-amber-400 bg-amber-50/90 text-amber-950 font-medium";
           } else {
             chip.className += " border-slate-300 hover:border-slate-400";
           }
 
-          // Discrepancy Highlighting Mode
           if (highlightFixes && (item.isCorrected || item.isRestored)) {
             chip.className += " ring-2 ring-amber-500 ring-offset-1 animate-pulse";
           }
 
-          // Dot indicator
           const dot = document.createElement("span");
           dot.className = "w-2.5 h-2.5 rounded-full flex-shrink-0";
           dot.style.backgroundColor = item.color || "#16a34a";
@@ -553,7 +555,6 @@
             dot.innerHTML = "P";
           }
 
-          // Text content
           const textWrap = document.createElement("div");
           textWrap.className = "leading-tight text-left";
 
@@ -579,15 +580,12 @@
           chip.appendChild(dot);
           chip.appendChild(textWrap);
 
-          // Click to Edit
           chip.addEventListener("click", (e) => {
             e.stopPropagation();
             openEditModal(item);
           });
 
-          // Enable Horizontal Dragging along timeline
           makeDraggable(chip, item);
-
           chipsContainer.appendChild(chip);
         });
 
@@ -625,11 +623,9 @@
           window.removeEventListener("mousemove", onMouseMove);
           window.removeEventListener("mouseup", onMouseUp);
 
-          // Snap to closest approximate day and update milestone
           const finalPercent = parseFloat(element.style.left);
           const approxDay = Math.round((finalPercent / 100) * TOTAL_DAYS);
 
-          // Find month and day
           let cumulative = 0;
           let monthIdx = 0;
           for (let m = 0; m < 12; m++) {
@@ -707,13 +703,11 @@
       const style = document.getElementById("mStyle").value;
 
       if (id) {
-        // Update existing
         const idx = milestones.findIndex(m => m.id === id);
         if (idx !== -1) {
           milestones[idx] = { ...milestones[idx], title, lane, date, location, color, row, style };
         }
       } else {
-        // Add new
         const newId = "m-" + Date.now();
         milestones.push({ id: newId, title, lane, date, location, color, row, style });
       }
@@ -733,11 +727,14 @@
       }
     };
 
+    // Revert Button Listener
+    document.getElementById("revertOriginalBtn").onclick = revertToOriginal;
+
     // Toggle Discrepancy Highlights
     const toggleFixesBtn = document.getElementById("toggleFixesBtn");
     toggleFixesBtn.onclick = () => {
       highlightFixes = !highlightFixes;
-      document.getElementById("fixesBtnText").innerText = highlightFixes ? "Clear Fix Highlights" : "Show Discrepancy Highlights";
+      document.getElementById("fixesBtnText").innerText = highlightFixes ? "Clear Fix Highlights" : "Show Discrepancy";
       renderBoard();
     };
 
@@ -789,14 +786,8 @@
       link.click();
     };
 
-    // Reset Data
-    document.getElementById("resetDataBtn").onclick = () => {
-      if (confirm("Reset roadmap back to the ClickUp TSV master baseline?")) {
-        milestones = JSON.parse(JSON.stringify(INITIAL_MILESTONES));
-        persistState();
-        renderBoard();
-      }
-    };
+    // Reset Data in dropdown
+    document.getElementById("resetDataBtn").onclick = revertToOriginal;
 
     // Initial Render
     renderBoard();
