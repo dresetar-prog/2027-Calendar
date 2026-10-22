@@ -39,6 +39,7 @@
     .swimlane-row:last-child {
       border-bottom: none;
     }
+    /* Draggable Milestone Card */
     .milestone-chip {
       position: absolute;
       transition: box-shadow 0.15s ease, transform 0.15s ease;
@@ -151,7 +152,7 @@
     </div>
   </header>
 
-  <!-- Notification Banner for Detected Issues -->
+  <!-- Notification Banner -->
   <div id="issueBanner" class="w-full max-w-[1440px] mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 flex items-start gap-3 shadow-sm no-print">
     <i class="fa-solid fa-calendar-check text-amber-600 text-base mt-0.5"></i>
     <div class="flex-1">
@@ -277,16 +278,23 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Date (YYYY-MM-DD)</label>
-            <input type="date" id="mDate" min="2027-01-01" max="2027-12-31" required class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Location / Details</label>
+            <input type="text" id="mLocation" placeholder="e.g. San Diego, Palm Springs" class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Location / Details</label>
-            <input type="text" id="mLocation" placeholder="e.g. San Diego, Chicago" class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Start Date (YYYY-MM-DD)</label>
+            <input type="date" id="mDate" min="2027-01-01" max="2027-12-31" required class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
           </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">End Date (Optional)</label>
+            <input type="date" id="mEndDate" min="2027-01-01" max="2027-12-31" class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Indicator Color</label>
             <div class="flex items-center gap-2 mt-1">
@@ -294,9 +302,6 @@
               <span id="colorHexLabel" class="text-xs text-slate-500 font-mono">#16a34a</span>
             </div>
           </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Vertical Stagger Row</label>
             <select id="mRow" class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white font-medium">
@@ -304,14 +309,15 @@
               <option value="bottom">Bottom (Row 2)</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Badge Style</label>
-            <select id="mStyle" class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white font-medium">
-              <option value="solid">Standard White Card</option>
-              <option value="accent">Highlighted Border</option>
-              <option value="break">Operational Pause / Striped</option>
-            </select>
-          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Badge Style</label>
+          <select id="mStyle" class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white font-medium">
+            <option value="solid">Standard White Card</option>
+            <option value="accent">Highlighted Border</option>
+            <option value="break">Operational Pause / Striped</option>
+          </select>
         </div>
 
         <div class="flex items-center justify-between pt-4 border-t border-slate-100">
@@ -351,9 +357,15 @@
       return (day / TOTAL_DAYS) * 100;
     }
 
+    // Timezone-safe string formatter
     function formatDateDisplay(dateStr) {
-      const date = new Date(dateStr + "T00:00:00");
-      return date.toLocaleDateString("en-US", { month: "short", day: "2-digit" });
+      if (!dateStr) return '';
+      const parts = dateStr.split('-');
+      const mIdx = parseInt(parts[1], 10) - 1;
+      const d = parseInt(parts[2], 10);
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const dStr = d < 10 ? `0${d}` : `${d}`;
+      return `${months[mIdx]} ${dStr}`;
     }
 
     const SWIMLANES = [
@@ -368,52 +380,67 @@
     ];
 
     const INITIAL_MILESTONES = [
-      { id: "fp-1", lane: "fastpath", title: "Spring FastPath Start", date: "2027-04-19", location: "", color: "#16a34a", row: "top", style: "solid" },
-      { id: "fp-2", lane: "fastpath", title: "Spring FastPath Pitch", date: "2027-06-03", location: "San Diego", color: "#dc2626", row: "bottom", style: "solid" },
-      { id: "fp-3", lane: "fastpath", title: "Fall FastPath Start", date: "2027-10-11", location: "", color: "#16a34a", row: "top", style: "solid" },
-      { id: "fp-4", lane: "fastpath", title: "Fall FastPath Pitch", date: "2027-12-09", location: "San Diego", color: "#dc2626", row: "bottom", style: "solid" },
+      // FastPath Program
+      { id: "fp-1", lane: "fastpath", title: "Spring FastPath", date: "2027-04-19", endDate: "2027-05-28", location: "", color: "#16a34a", row: "top", style: "solid" },
+      { id: "fp-2", lane: "fastpath", title: "Spring FastPath Pitch", date: "2027-06-03", endDate: "2027-06-04", location: "San Diego", color: "#dc2626", row: "bottom", style: "solid" },
+      { id: "fp-3", lane: "fastpath", title: "Fall FastPath", date: "2027-10-25", endDate: "2027-12-10", location: "", color: "#16a34a", row: "top", style: "solid" },
+      { id: "fp-4", lane: "fastpath", title: "Fall FastPath Pitch", date: "2027-12-16", endDate: "2027-12-17", location: "San Diego", color: "#dc2626", row: "bottom", style: "solid" },
       
       // Holidays (Hidden by Default)
       { id: "fp-pause", lane: "fastpath", title: "Thanksgiving Break", date: "2027-11-22", endDate: "2027-11-26", location: "Pause", color: "#d97706", row: "top", style: "break", isHoliday: true },
       { id: "fp-xmas", lane: "fastpath", title: "Christmas Break", date: "2027-12-20", endDate: "2027-12-24", location: "Pause", color: "#d97706", row: "top", style: "break", isHoliday: true },
       
-      { id: "pc-1", lane: "passport", title: "MC 5", date: "2027-01-12", location: "", color: "#475569", row: "top", style: "solid" },
-      { id: "pc-2", lane: "passport", title: "MC 6", date: "2027-03-16", location: "", color: "#475569", row: "bottom", style: "solid" },
-      { id: "pc-3", lane: "passport", title: "MC 7", date: "2027-05-18", location: "", color: "#475569", row: "top", style: "solid" },
-      { id: "pc-4", lane: "passport", title: "MC 8", date: "2027-07-20", location: "", color: "#475569", row: "bottom", style: "solid" },
-      { id: "pc-5", lane: "passport", title: "MC 9", date: "2027-09-21", location: "", color: "#475569", row: "top", style: "solid" },
-      { id: "zb-1", lane: "zebra", title: "Zebra Cohort 1", date: "2027-01-21", location: "", color: "#334155", row: "top", style: "solid" },
-      { id: "zb-2", lane: "zebra", title: "Zebra Cohort 2", date: "2027-05-20", location: "", color: "#334155", row: "bottom", style: "solid" },
-      { id: "cae-1", lane: "cae", title: "CAE New York City", date: "2027-02-01", location: "", color: "#16a34a", row: "top", style: "solid" },
-      { id: "cae-2", lane: "cae", title: "CAE Pittsburgh", date: "2027-04-06", location: "", color: "#16a34a", row: "bottom", style: "solid" },
-      { id: "cae-3", lane: "cae", title: "CAE Chicago", date: "2027-05-11", location: "", color: "#16a34a", row: "top", style: "solid" },
-      { id: "cae-4", lane: "cae", title: "CAE Twin Cities", date: "2027-08-17", location: "", color: "#16a34a", row: "bottom", style: "solid" },
-      { id: "cae-5", lane: "cae", title: "CAE Baltimore", date: "2027-10-05", location: "", color: "#16a34a", row: "top", style: "solid" },
-      { id: "cae-6", lane: "cae", title: "CAE San Diego", date: "2027-10-26", location: "", color: "#16a34a", row: "bottom", style: "solid" },
-      { id: "rise-1", lane: "rise", title: "RISE Chicago", date: "2027-05-06", location: "", color: "#475569", row: "top", style: "solid" },
-      { id: "rise-2", lane: "rise", title: "RISE Newark", date: "2027-07-08", location: "", color: "#2563eb", row: "bottom", style: "solid" },
-      { id: "rise-3", lane: "rise", title: "RISE San Diego", date: "2027-10-21", location: "", color: "#2563eb", row: "bottom", style: "solid" },
-      { id: "rise-4", lane: "rise", title: "RISE TBD", date: "2027-12-09", location: "", color: "#92400e", row: "top", style: "solid" },
-      { id: "sifp-1", lane: "sifp", title: "Q4 2026", date: "2027-01-21", location: "", color: "#0284c7", row: "top", style: "solid" },
-      { id: "sifp-2", lane: "sifp", title: "Q1 2027", date: "2027-04-22", location: "", color: "#0284c7", row: "bottom", style: "solid" },
-      { id: "sifp-3", lane: "sifp", title: "Q2 2027", date: "2027-07-22", location: "", color: "#0284c7", row: "top", style: "solid" },
-      { id: "sifp-4", lane: "sifp", title: "Q3 2027", date: "2027-10-28", location: "", color: "#0284c7", row: "bottom", style: "solid" },
-      { id: "nat-1", lane: "national", title: "Kitty Fund", date: "2027-05-04", location: "", color: "#f59e0b", row: "top", style: "solid" },
-      { id: "nat-2", lane: "national", title: "Pride Fund", date: "2027-06-29", location: "", color: "#f59e0b", row: "bottom", style: "solid" },
-      { id: "nat-3", lane: "national", title: "Veterans", date: "2027-11-09", location: "", color: "#d97706", row: "top", style: "solid" },
-      { id: "wpo-1", lane: "wpo", title: "WPO Summit", date: "2027-05-12", location: "Palm Springs", color: "#78350f", row: "top", style: "solid" }
+      // Passport Community Program
+      { id: "pc-1", lane: "passport", title: "MC 5", date: "2027-01-12", endDate: "2027-03-02", location: "", color: "#475569", row: "top", style: "solid" },
+      { id: "pc-2", lane: "passport", title: "MC 6", date: "2027-03-16", endDate: "2027-05-04", location: "", color: "#475569", row: "bottom", style: "solid" },
+      { id: "pc-3", lane: "passport", title: "MC 7", date: "2027-05-18", endDate: "2027-07-06", location: "", color: "#475569", row: "top", style: "solid" },
+      { id: "pc-4", lane: "passport", title: "MC 8", date: "2027-07-20", endDate: "2027-09-07", location: "", color: "#475569", row: "bottom", style: "solid" },
+      { id: "pc-5", lane: "passport", title: "MC 9", date: "2027-09-21", endDate: "2027-11-09", location: "", color: "#475569", row: "top", style: "solid" },
+
+      // Zebra Program
+      { id: "zb-1", lane: "zebra", title: "Zebra Cohort 1", date: "2027-01-21", endDate: "2027-04-29", location: "", color: "#334155", row: "top", style: "solid" },
+      { id: "zb-2", lane: "zebra", title: "Zebra Cohort 2", date: "2027-05-20", endDate: "2027-08-26", location: "", color: "#334155", row: "bottom", style: "solid" },
+
+      // Capital Activation Events (CAE)
+      { id: "cae-1", lane: "cae", title: "CAE New York City", date: "2027-02-01", endDate: "2027-02-03", location: "", color: "#16a34a", row: "top", style: "solid" },
+      { id: "cae-2", lane: "cae", title: "CAE Pittsburgh", date: "2027-04-06", endDate: "2027-04-08", location: "", color: "#16a34a", row: "bottom", style: "solid" },
+      { id: "cae-3", lane: "cae", title: "CAE Chicago", date: "2027-05-11", endDate: "2027-05-13", location: "", color: "#16a34a", row: "top", style: "solid" },
+      { id: "cae-4", lane: "cae", title: "CAE Twin Cities", date: "2027-08-17", endDate: "2027-08-19", location: "", color: "#16a34a", row: "bottom", style: "solid" },
+      { id: "cae-5", lane: "cae", title: "CAE Baltimore", date: "2027-10-05", endDate: "2027-10-07", location: "", color: "#16a34a", row: "top", style: "solid" },
+      { id: "cae-6", lane: "cae", title: "CAE San Diego", date: "2027-10-26", endDate: "2027-10-28", location: "", color: "#16a34a", row: "bottom", style: "solid" },
+
+      // RISE Event
+      { id: "rise-1", lane: "rise", title: "RISE Chicago", date: "2027-05-06", endDate: "2027-05-06", location: "", color: "#475569", row: "top", style: "solid" },
+      { id: "rise-2", lane: "rise", title: "RISE Newark", date: "2027-07-08", endDate: "2027-07-08", location: "", color: "#2563eb", row: "bottom", style: "solid" },
+      { id: "rise-3", lane: "rise", title: "RISE San Diego", date: "2027-10-21", endDate: "2027-10-21", location: "", color: "#2563eb", row: "bottom", style: "solid" },
+      { id: "rise-4", lane: "rise", title: "RISE TBD", date: "2027-12-09", endDate: "2027-12-09", location: "", color: "#92400e", row: "top", style: "solid" },
+
+      // SIFP Grant
+      { id: "sifp-1", lane: "sifp", title: "Q4 2026", date: "2027-01-21", endDate: "2027-01-21", location: "", color: "#0284c7", row: "top", style: "solid" },
+      { id: "sifp-2", lane: "sifp", title: "Q1 2027", date: "2027-04-22", endDate: "2027-04-22", location: "", color: "#0284c7", row: "bottom", style: "solid" },
+      { id: "sifp-3", lane: "sifp", title: "Q2 2027", date: "2027-07-22", endDate: "2027-07-22", location: "", color: "#0284c7", row: "top", style: "solid" },
+      { id: "sifp-4", lane: "sifp", title: "Q3 2027", date: "2027-10-28", endDate: "2027-10-28", location: "", color: "#0284c7", row: "bottom", style: "solid" },
+
+      // National Grant
+      { id: "nat-1", lane: "national", title: "Kitty Fund", date: "2027-05-04", endDate: "2027-05-04", location: "", color: "#f59e0b", row: "top", style: "solid" },
+      { id: "nat-2", lane: "national", title: "Pride Fund", date: "2027-06-29", endDate: "2027-06-29", location: "", color: "#f59e0b", row: "bottom", style: "solid" },
+      { id: "nat-3", lane: "national", title: "Veterans", date: "2027-11-09", endDate: "2027-11-09", location: "", color: "#d97706", row: "top", style: "solid" },
+
+      // WPO Event
+      { id: "wpo-1", lane: "wpo", title: "WPO Summit", date: "2027-05-12", endDate: "2027-05-14", location: "Palm Springs", color: "#78350f", row: "top", style: "solid" }
     ];
 
-    let milestones = JSON.parse(localStorage.getItem('roadmap_milestones_2027')) || [...INITIAL_MILESTONES];
+    // Auto-update to v2 to load new start/end date pairs automatically
+    let milestones = JSON.parse(localStorage.getItem('roadmap_milestones_2027_v2')) || [...INITIAL_MILESTONES];
     let showHolidays = false;
 
     function persistState() {
-      localStorage.setItem('roadmap_milestones_2027', JSON.stringify(milestones));
+      localStorage.setItem('roadmap_milestones_2027_v2', JSON.stringify(milestones));
     }
 
     function revertToOriginal() {
       if (confirm("Revert all milestones back to original dates and positions?")) {
-        localStorage.removeItem('roadmap_milestones_2027');
+        localStorage.removeItem('roadmap_milestones_2027_v2');
         milestones = JSON.parse(JSON.stringify(INITIAL_MILESTONES));
         persistState();
         renderBoard();
@@ -497,7 +524,7 @@
           dateLocSpan.className = "text-[10px] text-slate-500 font-medium whitespace-nowrap";
           
           let dateText = formatDateDisplay(item.date);
-          if (item.endDate) {
+          if (item.endDate && item.endDate !== item.date) {
             dateText += ` - ${formatDateDisplay(item.endDate)}`;
           }
           if (item.location) {
@@ -589,6 +616,7 @@
       document.getElementById("mTitle").value = item.title;
       document.getElementById("mLane").value = item.lane;
       document.getElementById("mDate").value = item.date;
+      document.getElementById("mEndDate").value = item.endDate || "";
       document.getElementById("mLocation").value = item.location || "";
       document.getElementById("mColor").value = item.color || "#16a34a";
       document.getElementById("colorHexLabel").innerText = item.color || "#16a34a";
@@ -605,6 +633,7 @@
       document.getElementById("mTitle").value = "";
       document.getElementById("mLane").value = "fastpath";
       document.getElementById("mDate").value = "2027-06-15";
+      document.getElementById("mEndDate").value = "";
       document.getElementById("mLocation").value = "";
       document.getElementById("mColor").value = "#16a34a";
       document.getElementById("colorHexLabel").innerText = "#16a34a";
@@ -628,6 +657,7 @@
       const title = document.getElementById("mTitle").value;
       const lane = document.getElementById("mLane").value;
       const date = document.getElementById("mDate").value;
+      const endDate = document.getElementById("mEndDate").value || null;
       const location = document.getElementById("mLocation").value;
       const color = document.getElementById("mColor").value;
       const row = document.getElementById("mRow").value;
@@ -637,11 +667,11 @@
       if (id) {
         const idx = milestones.findIndex(m => m.id === id);
         if (idx !== -1) {
-          milestones[idx] = { ...milestones[idx], title, lane, date, location, color, row, style, isHoliday };
+          milestones[idx] = { ...milestones[idx], title, lane, date, endDate, location, color, row, style, isHoliday };
         }
       } else {
         const newId = "m-" + Date.now();
-        milestones.push({ id: newId, title, lane, date, location, color, row, style, isHoliday: false });
+        milestones.push({ id: newId, title, lane, date, endDate, location, color, row, style, isHoliday: false });
       }
 
       persistState();
@@ -693,9 +723,9 @@
     };
 
     document.getElementById("exportTsvBtn").onclick = () => {
-      let tsvContent = "Program\tTitle\tStart Date\tLocation\tIndicator Color\n";
+      let tsvContent = "Program\tTitle\tStart Date\tEnd Date\tLocation\tIndicator Color\n";
       milestones.forEach(m => {
-        tsvContent += `${m.lane}\t${m.title}\t${m.date}\t${m.location || ""}\t${m.color}\n`;
+        tsvContent += `${m.lane}\t${m.title}\t${m.date}\t${m.endDate || ""}\t${m.location || ""}\t${m.color}\n`;
       });
       const blob = new Blob([tsvContent], { type: "text/tab-separated-values;charset=utf-8;" });
       const link = document.createElement("a");
