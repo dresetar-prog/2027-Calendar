@@ -1,262 +1,805 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>2027 Program Roadmap</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strategic Program Roadmap (2027 Only) - Editable Swimlanes</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    :root {
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --muted: #64748b;
-      --col-w: 220px;
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 24px; min-width: 1300px; user-select: none; }
-    
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    h1 { font-size: 24px; font-weight: 800; }
-    .controls { display: flex; gap: 8px; }
-    button {
-      background: #0f172a; color: #fff; border: 1px solid #0f172a; padding: 7px 14px;
-      border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+    .font-display {
+      font-family: 'Space Grotesk', sans-serif;
     }
-    button.secondary { background: #fff; color: #0f172a; border-color: #cbd5e1; }
-    button:hover { opacity: 0.9; }
-
-    .board { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; }
-    .timeline-hdr { display: grid; grid-template-columns: var(--col-w) repeat(12, 1fr); background: #f1f5f9; border-bottom: 2px solid var(--border); }
-    .hdr-cell { padding: 10px 4px; text-align: center; font-size: 12px; font-weight: 700; color: #475569; border-right: 1px solid var(--border); }
-    .hdr-cell:first-child { text-align: left; padding-left: 16px; }
-    .hdr-cell:last-child { border-right: none; }
-
-    .lane { display: grid; grid-template-columns: var(--col-w) 1fr; border-bottom: 1px solid var(--border); min-height: 80px; position: relative; }
-    .lane:last-child { border-bottom: none; }
-    .lane-lbl { background: #f8fafc; border-right: 2px solid var(--border); padding: 12px 16px; font-weight: 700; font-size: 13px; display: flex; align-items: center; color: #1e293b; line-height: 1.3; }
-    .track { position: relative; width: 100%; height: 100%; background: repeating-linear-gradient(to right, transparent, transparent calc(100% / 12 - 1px), var(--border) calc(100% / 12 - 1px), var(--border) calc(100% / 12)); }
-
-    .chip {
+    /* Grid & Board styles */
+    .roadmap-canvas {
+      min-width: 1200px;
+      user-select: none;
+    }
+    .month-col {
+      border-right: 1.5px solid #cbd5e1;
+    }
+    .month-col:last-child {
+      border-right: none;
+    }
+    .swimlane-row {
+      border-bottom: 1.5px solid #cbd5e1;
+      min-height: 82px;
+      position: relative;
+    }
+    .swimlane-row:last-child {
+      border-bottom: none;
+    }
+    /* Draggable Milestone Card */
+    .milestone-chip {
       position: absolute;
-      background: #fff;
-      border: 1px solid #cbd5e1;
-      border-radius: 20px;
-      padding: 4px 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-      transform: translateX(-50%);
-      white-space: nowrap;
-      cursor: pointer;
-      transition: top 0.2s, box-shadow 0.2s;
-      z-index: 2;
+      transition: box-shadow 0.15s ease, transform 0.15s ease;
+      cursor: grab;
+      z-index: 10;
     }
-    .chip:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.15); z-index: 10; border-color: #94a3b8; }
-    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .info { display: flex; flex-direction: column; line-height: 1.15; }
-    .info-title { font-size: 11px; font-weight: 700; }
-    .info-date { font-size: 10px; color: var(--muted); }
-
-    /* Modal */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
-    .modal { background: #fff; border-radius: 8px; width: 360px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-    .modal h2 { font-size: 16px; margin-bottom: 12px; }
-    .modal label { display: block; font-size: 12px; font-weight: 600; margin: 8px 0 4px; color: var(--muted); }
-    .modal input, .modal select { width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    .milestone-chip:active {
+      cursor: grabbing;
+      z-index: 30;
+      transform: scale(1.02);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+    .milestone-chip:hover {
+      z-index: 20;
+    }
+    /* Print / Slide Export View */
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background: white !important;
+        padding: 0 !important;
+      }
+      .roadmap-wrapper {
+        box-shadow: none !important;
+        border: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+      }
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #e2e8f0;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
   </style>
 </head>
-<body>
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen">
 
-  <header>
-    <h1>Strategic Program Roadmap (2027 Only)</h1>
-    <div class="controls">
-      <button class="secondary" onclick="exportData()">Export JSON</button>
-      <button class="secondary" onclick="resetDefaults()">Reset Defaults</button>
-      <button onclick="window.print()">Print / PDF</button>
+  <!-- Main Application Header & Controls -->
+  <header class="w-full max-w-[1400px] mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
+    <div>
+      <div class="flex items-center gap-3">
+        <span class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-md">
+          <i class="fa-solid fa-timeline text-lg"></i>
+        </span>
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900">Strategic Roadmap Studio (2027)</h1>
+          <p class="text-sm text-slate-500 font-medium">Synced with ClickUp TSV Master Calendar • Click or drag any milestone to modify</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Toolbar -->
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Highlight Fixes Toggle -->
+      <button id="toggleFixesBtn" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 transition shadow-sm">
+        <i class="fa-solid fa-circle-exclamation text-amber-600"></i>
+        <span id="fixesBtnText">Show Discrepancy Highlights</span>
+      </button>
+
+      <!-- Thanksgiving Break Toggle -->
+      <button id="toggleBreakBtn" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition shadow-sm">
+        <i class="fa-solid fa-mug-hot text-orange-500"></i>
+        <span id="breakBtnText">Hide Thanksgiving Break</span>
+      </button>
+
+      <!-- Add Milestone -->
+      <button id="openAddModalBtn" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm">
+        <i class="fa-solid fa-plus"></i>
+        <span>Add Milestone</span>
+      </button>
+
+      <!-- Full Screen Presentation Mode -->
+      <button id="presentationModeBtn" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm">
+        <i class="fa-solid fa-expand"></i>
+        <span>Slide Mode</span>
+      </button>
+
+      <!-- Export Menu -->
+      <div class="relative inline-block text-left">
+        <button id="exportDropdownBtn" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm transition">
+          <i class="fa-solid fa-download"></i>
+          <span>Export</span>
+          <i class="fa-solid fa-chevron-down text-[10px] ml-1 text-slate-400"></i>
+        </button>
+        <div id="exportMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50">
+          <button id="printPdfBtn" class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-100 flex items-center gap-2.5">
+            <i class="fa-solid fa-file-pdf text-red-500"></i> Print / Save as PDF
+          </button>
+          <button id="exportTsvBtn" class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-100 flex items-center gap-2.5">
+            <i class="fa-solid fa-file-lines text-emerald-600"></i> Export Updated TSV
+          </button>
+          <button id="resetDataBtn" class="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2.5 border-t border-slate-100 mt-1 pt-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset to Original TSV
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
-  <div class="board">
-    <div class="timeline-hdr" id="headerRow">
-      <div class="hdr-cell">Program / Track</div>
-    </div>
-    <div id="lanesContainer"></div>
-  </div>
-
-  <div class="modal-overlay" id="editModal">
-    <div class="modal">
-      <h2>Edit Milestone</h2>
-      <label>Title</label>
-      <input type="text" id="mTitle" />
-      <label>Date String (Display)</label>
-      <input type="text" id="mDateStr" />
-      <label>Start Date (ISO: YYYY-MM-DD)</label>
-      <input type="date" id="mStart" />
-      <div class="modal-actions">
-        <button class="secondary" onclick="closeModal()">Cancel</button>
-        <button onclick="saveModal()">Save</button>
+  <!-- Notification Banner for Detected Issues -->
+  <div id="issueBanner" class="w-full max-w-[1400px] mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 flex items-start gap-3 shadow-sm no-print">
+    <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mt-0.5"></i>
+    <div class="flex-1">
+      <div class="font-bold flex items-center gap-2">
+        <span>Audited Roadmap Adjustments (ClickUp Master Sync)</span>
+        <span class="bg-amber-200 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-semibold">2 Corrections Loaded</span>
       </div>
+      <p class="text-amber-800 mt-0.5 leading-relaxed">
+        1. <strong>Alignment Fixed:</strong> <span class="underline">Spring Cohort 1 Pitch</span> is on <strong>Jun 03</strong> and is now accurately anchored in the June column (was incorrectly plotted in May).<br>
+        2. <strong>Missing Item Restored:</strong> <span class="underline">Thanksgiving Break</span> (Nov 22–26, David Resetar) has been reinstated into the FastPath timeline.
+      </p>
+    </div>
+    <button onclick="document.getElementById('issueBanner').classList.add('hidden')" class="text-amber-600 hover:text-amber-800">
+      <i class="fa-solid fa-xmark text-sm"></i>
+    </button>
+  </div>
+
+  <!-- ROADMAP BOARD WRAPPER (Slide Aspect Ratio: 16:9 Canvas) -->
+  <div class="w-full max-w-[1400px] overflow-x-auto pb-4">
+    <div id="roadmapSlide" class="roadmap-wrapper bg-white border border-slate-300 rounded-2xl shadow-xl p-6 md:p-8 roadmap-canvas mx-auto relative select-none">
+      
+      <!-- Chart Title Matching Original Presentation Image -->
+      <div class="text-center mb-6">
+        <h2 id="chartMainTitle" class="text-3xl font-extrabold text-slate-900 tracking-tight cursor-pointer hover:bg-slate-50 px-3 py-1 rounded inline-block transition" title="Click to edit title" contenteditable="true">
+          Strategic Program Roadmap (2027 Only)
+        </h2>
+      </div>
+
+      <!-- Main Swimlane Grid Table -->
+      <div class="relative border-t-2 border-l-2 border-r-2 border-b-2 border-slate-900 rounded-lg overflow-hidden bg-white">
+        
+        <!-- Header Row (Months) -->
+        <div class="grid grid-cols-[180px_repeat(12,_1fr)] border-b-2 border-slate-900 bg-slate-50 text-[13px] font-bold text-slate-800 text-center select-none">
+          <div class="p-3 border-r-2 border-slate-900 flex items-center justify-center font-display uppercase tracking-wider text-xs text-slate-500 bg-slate-100">
+            Programs
+          </div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Jan 2027</div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Feb 2027</div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Mar 2027</div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Apr 2027</div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">May 2027</div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Jun 2027</div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Jul 2027</div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Aug 2027</div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Sep 2027</div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Oct 2027</div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Nov 2027</div>
+          <div class="p-2.5 month-col -rotate-45 md:rotate-0 flex items-center justify-center">Dec 2027</div>
+        </div>
+
+        <!-- Swimlane Rows Container -->
+        <div id="swimlanesBody" class="divide-y divide-slate-300">
+          <!-- Swimlanes will be dynamically injected by JavaScript -->
+        </div>
+
+        <!-- Footer Month Markers (Bottom Legend Line mirroring top) -->
+        <div class="grid grid-cols-[180px_repeat(12,_1fr)] border-t-2 border-slate-900 bg-slate-50 text-[11px] font-semibold text-slate-600 text-center select-none">
+          <div class="p-2 border-r-2 border-slate-900 bg-slate-100"></div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Jan 2027</div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Feb 2027</div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Mar 2027</div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Apr 2027</div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">May 2027</div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Jun 2027</div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Jul 2027</div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Aug 2027</div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Sep 2027</div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Oct 2027</div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Nov 2027</div>
+          <div class="p-2 month-col flex items-center justify-center -rotate-45 md:rotate-0">Dec 2027</div>
+        </div>
+
+      </div>
+
+      <!-- Slide Legend / Footer Note -->
+      <div class="mt-5 flex flex-wrap items-center justify-between text-xs text-slate-500 font-medium pt-3 border-t border-slate-200">
+        <div class="flex items-center gap-5">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Cohort / Activation Milestone</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> Pitch / Culmination Event</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Grant Announcements</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span> SIFP Press Release</span>
+        </div>
+        <div class="text-[11px] text-slate-400">
+          Executive Presentation Slide • High-Precision Alignment Engine
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <script>
-    const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const LANES = [
-      "FastPath Program", "Passport Community Program", "Zebra Program",
-      "Capital Activation Events", "RISE Event", "SIFP Grant", "National Grant", "WPO Event"
-    ];
+  <!-- EDIT / ADD MILESTONE MODAL -->
+  <div id="milestoneModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 animate-in fade-in zoom-in duration-150">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 id="modalTitle" class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Edit Milestone
+        </h3>
+        <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
 
-    const RAW_EVENTS = [
-      { id:1, lane:"FastPath Program", label:"Spring Cohort 1 Onboarding", dateStr:"Apr 19", start:"2027-04-19", dot:"#16a34a" },
-      { id:2, lane:"FastPath Program", label:"Spring Cohort 1 Pitch", dateStr:"Jun 03 | San Diego", start:"2027-06-03", dot:"#dc2626" },
-      { id:3, lane:"FastPath Program", label:"Fall Cohort 2 Onboarding", dateStr:"Oct 11", start:"2027-10-11", dot:"#16a34a" },
-      { id:4, lane:"FastPath Program", label:"Thanksgiving Break", dateStr:"Nov 22 - Nov 26", start:"2027-11-22", dot:"#94a3b8" },
-      { id:5, lane:"FastPath Program", label:"Fall Cohort 2 Pitch", dateStr:"Dec 09 | San Diego", start:"2027-12-09", dot:"#dc2626" },
-      { id:6, lane:"Passport Community Program", label:"MC 5", dateStr:"Jan 12", start:"2027-01-12", dot:"#475569" },
-      { id:7, lane:"Passport Community Program", label:"MC 6", dateStr:"Mar 16", start:"2027-03-16", dot:"#475569" },
-      { id:8, lane:"Passport Community Program", label:"MC 7", dateStr:"May 18", start:"2027-05-18", dot:"#475569" },
-      { id:9, lane:"Passport Community Program", label:"MC 8", dateStr:"Jul 20", start:"2027-07-20", dot:"#475569" },
-      { id:10, lane:"Passport Community Program", label:"MC 9", dateStr:"Sep 21", start:"2027-09-21", dot:"#475569" },
-      { id:11, lane:"Zebra Program", label:"Zebra Cohort 1", dateStr:"Jan 21", start:"2027-01-21", dot:"#334155" },
-      { id:12, lane:"Zebra Program", label:"Zebra Cohort 2", dateStr:"May 20", start:"2027-05-20", dot:"#334155" },
-      { id:13, lane:"Capital Activation Events", label:"CAE New York City", dateStr:"Feb 01", start:"2027-02-01", dot:"#16a34a" },
-      { id:14, lane:"Capital Activation Events", label:"CAE Pittsburgh", dateStr:"Apr 06", start:"2027-04-06", dot:"#16a34a" },
-      { id:15, lane:"Capital Activation Events", label:"CAE Chicago", dateStr:"May 11", start:"2027-05-11", dot:"#16a34a" },
-      { id:16, lane:"Capital Activation Events", label:"CAE Twin Cities", dateStr:"Aug 17", start:"2027-08-17", dot:"#16a34a" },
-      { id:17, lane:"Capital Activation Events", label:"CAE Baltimore", dateStr:"Oct 05", start:"2027-10-05", dot:"#16a34a" },
-      { id:18, lane:"Capital Activation Events", label:"CAE San Diego", dateStr:"Oct 26", start:"2027-10-26", dot:"#16a34a" },
-      { id:19, lane:"RISE Event", label:"RISE Chicago", dateStr:"May 06", start:"2027-05-06", dot:"#475569" },
-      { id:20, lane:"RISE Event", label:"RISE Newark", dateStr:"Jul 08", start:"2027-07-08", dot:"#475569" },
-      { id:21, lane:"RISE Event", label:"RISE San Diego", dateStr:"Oct 21", start:"2027-10-21", dot:"#475569" },
-      { id:22, lane:"RISE Event", label:"RISE TBD", dateStr:"Dec 09", start:"2027-12-09", dot:"#a16207" },
-      { id:23, lane:"SIFP Grant", label:"Q4 2026", dateStr:"Jan 21", start:"2027-01-21", dot:"#2563eb" },
-      { id:24, lane:"SIFP Grant", label:"Q1 2027", dateStr:"Apr 22", start:"2027-04-22", dot:"#2563eb" },
-      { id:25, lane:"SIFP Grant", label:"Q2 2027", dateStr:"Jul 22", start:"2027-07-22", dot:"#2563eb" },
-      { id:26, lane:"SIFP Grant", label:"Q3 2027", dateStr:"Oct 28", start:"2027-10-28", dot:"#2563eb" },
-      { id:27, lane:"National Grant", label:"Kitty Fund", dateStr:"May 04", start:"2027-05-04", dot:"#ea580c" },
-      { id:28, lane:"National Grant", label:"Pride Fund", dateStr:"Jun 29", start:"2027-06-29", dot:"#ea580c" },
-      { id:29, lane:"National Grant", label:"Veterans", dateStr:"Nov 09", start:"2027-11-09", dot:"#ea580c" },
-      { id:30, lane:"WPO Event", label:"WPO Summit", dateStr:"May 12 | Palm Springs", start:"2027-05-12", dot:"#854d0e" }
-    ];
+      <form id="milestoneForm" class="mt-4 space-y-4">
+        <input type="hidden" id="editMilestoneId">
 
-    let events = JSON.parse(localStorage.getItem('2027_calendar_events')) || RAW_EVENTS;
-    let activeId = null;
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Item Title</label>
+          <input type="text" id="mTitle" required class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+        </div>
 
-    function init() {
-      // Build Headers
-      const hdr = document.getElementById('headerRow');
-      MONTHS.forEach(m => {
-        const d = document.createElement('div');
-        d.className = 'hdr-cell';
-        d.textContent = `${m} 2027`;
-        hdr.appendChild(d);
-      });
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Program (Swimlane)</label>
+            <select id="mLane" class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white font-medium">
+              <option value="fastpath">FastPath Program</option>
+              <option value="passport">Passport Community Program</option>
+              <option value="zebra">Zebra Program</option>
+              <option value="cae">Capital Activation Events</option>
+              <option value="rise">RISE Event</option>
+              <option value="sifp">SIFP Grant</option>
+              <option value="national">National Grant</option>
+              <option value="wpo">WPO Event</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Date (YYYY-MM-DD)</label>
+            <input type="date" id="mDate" min="2027-01-01" max="2027-12-31" required class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+          </div>
+        </div>
 
-      render();
-    }
-
-    function calculateOffset(isoDate) {
-      const start = new Date('2027-01-01T00:00:00Z').getTime();
-      const end = new Date('2027-12-31T23:59:59Z').getTime();
-      const cur = new Date(isoDate + 'T12:00:00Z').getTime();
-      return Math.min(Math.max(((cur - start) / (end - start)) * 100, 0), 100);
-    }
-
-    function render() {
-      const container = document.getElementById('lanesContainer');
-      container.innerHTML = '';
-
-      LANES.forEach(laneName => {
-        const laneEl = document.createElement('div');
-        laneEl.className = 'lane';
-
-        const title = document.createElement('div');
-        title.className = 'lane-lbl';
-        title.innerHTML = laneName.replace(/ /g, '<br>');
-        laneEl.appendChild(title);
-
-        const track = document.createElement('div');
-        track.className = 'track';
-
-        // Filter and sort events for anti-collision
-        const laneEvents = events
-          .filter(e => e.lane === laneName)
-          .sort((a,b) => new Date(a.start) - new Date(b.start));
-
-        laneEvents.forEach((ev, idx) => {
-          const offset = calculateOffset(ev.start);
-          const chip = document.createElement('div');
-          chip.className = 'chip';
-          chip.style.left = `${offset}%`;
-
-          // Dynamic Stagger Algorithm
-          let topOffset = 22; // default center
-          if (idx > 0) {
-            const prevOffset = calculateOffset(laneEvents[idx - 1].start);
-            if (offset - prevOffset < 8.5) {
-              topOffset = (idx % 2 === 0) ? 8 : 42;
-            }
-          }
-          chip.style.top = `${topOffset}px`;
-
-          chip.innerHTML = `
-            <div class="dot" style="background: ${ev.dot}"></div>
-            <div class="info">
-              <span class="info-title">${ev.label}</span>
-              <span class="info-date">${ev.dateStr}</span>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Location / Details</label>
+            <input type="text" id="mLocation" placeholder="e.g. San Diego, Chicago" class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Indicator Color</label>
+            <div class="flex items-center gap-2 mt-1">
+              <input type="color" id="mColor" value="#16a34a" class="h-9 w-12 rounded cursor-pointer border border-slate-300 p-0.5">
+              <span id="colorHexLabel" class="text-xs text-slate-500 font-mono">#16a34a</span>
             </div>
-          `;
-          chip.onclick = () => openModal(ev.id);
-          track.appendChild(chip);
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Vertical Stagger Row</label>
+            <select id="mRow" class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white font-medium">
+              <option value="top">Top (Row 1)</option>
+              <option value="bottom">Bottom (Row 2)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Badge Style</label>
+            <select id="mStyle" class="w-full text-sm px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white font-medium">
+              <option value="solid">Standard White Card</option>
+              <option value="accent">Highlighted Border</option>
+              <option value="break">Operational Pause / Striped</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+          <button type="button" id="deleteMilestoneBtn" class="px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg transition flex items-center gap-1.5">
+            <i class="fa-solid fa-trash-can"></i> Delete
+          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" id="cancelModalBtn" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition">
+              Cancel
+            </button>
+            <button type="submit" class="px-5 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPT ENGINE -->
+  <script>
+    // 2027 Calendar Day-Count & Coordinate Utilities (365 days)
+    const DAYS_IN_MONTH_2027 = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const MONTH_STARTS_2027 = [0];
+    for (let i = 0; i < 11; i++) {
+      MONTH_STARTS_2027.push(MONTH_STARTS_2027[i] + DAYS_IN_MONTH_2027[i]);
+    }
+    const TOTAL_DAYS = 365;
+
+    function dateToDayOfYear(dateStr) {
+      const parts = dateStr.split('-');
+      const m = parseInt(parts[1], 10) - 1;
+      const d = parseInt(parts[2], 10);
+      return MONTH_STARTS_2027[m] + (d - 1);
+    }
+
+    function dayOfYearToPercentage(day) {
+      return (day / TOTAL_DAYS) * 100;
+    }
+
+    function formatDateDisplay(dateStr) {
+      const date = new Date(dateStr + "T00:00:00");
+      return date.toLocaleDateString("en-US", { month: "short", day: "2-digit" });
+    }
+
+    // Swimlane Definitions
+    const SWIMLANES = [
+      { id: "fastpath", name: "FastPath<br>Program", height: "min-h-[96px]" },
+      { id: "passport", name: "Passport<br>Community<br>Program", height: "min-h-[88px]" },
+      { id: "zebra", name: "Zebra<br>Program", height: "min-h-[80px]" },
+      { id: "cae", name: "Capital<br>Activation<br>Events", height: "min-h-[92px]" },
+      { id: "rise", name: "RISE<br>Event", height: "min-h-[82px]" },
+      { id: "sifp", name: "SIFP<br>Grant", height: "min-h-[82px]" },
+      { id: "national", name: "National<br>Grant", height: "min-h-[82px]" },
+      { id: "wpo", name: "WPO<br>Event", height: "min-h-[80px]" }
+    ];
+
+    // Master Initial Dataset (Directly from TSV with verified fixes)
+    const INITIAL_MILESTONES = [
+      // FastPath Program
+      {
+        id: "fp-1",
+        lane: "fastpath",
+        title: "Spring Cohort 1 Onboarding",
+        date: "2027-04-19",
+        location: "",
+        color: "#16a34a", // Green
+        row: "top",
+        style: "solid"
+      },
+      {
+        id: "fp-2",
+        lane: "fastpath",
+        title: "Spring Cohort 1 Pitch",
+        date: "2027-06-03", // Corrected to early June!
+        location: "San Diego",
+        color: "#dc2626", // Red
+        row: "bottom",
+        style: "solid",
+        isCorrected: true,
+        correctionNote: "Corrected from May to early June (Jun 03) based on TSV"
+      },
+      {
+        id: "fp-3",
+        lane: "fastpath",
+        title: "Fall Cohort 2 Onboarding",
+        date: "2027-10-11",
+        location: "",
+        color: "#16a34a", // Green
+        row: "top",
+        style: "solid"
+      },
+      {
+        id: "fp-pause",
+        lane: "fastpath",
+        title: "Thanksgiving Break",
+        date: "2027-11-22",
+        endDate: "2027-11-26",
+        location: "Pause",
+        color: "#d97706", // Amber
+        row: "top",
+        style: "break",
+        isRestored: true,
+        correctionNote: "Restored missing 5-day scheduled pause from ClickUp TSV"
+      },
+      {
+        id: "fp-4",
+        lane: "fastpath",
+        title: "Fall Cohort 2 Pitch",
+        date: "2027-12-09",
+        location: "San Diego",
+        color: "#dc2626", // Red
+        row: "bottom",
+        style: "solid"
+      },
+
+      // Passport Community Program
+      { id: "pc-1", lane: "passport", title: "MC 5", date: "2027-01-12", location: "", color: "#475569", row: "top", style: "solid" },
+      { id: "pc-2", lane: "passport", title: "MC 6", date: "2027-03-16", location: "", color: "#475569", row: "bottom", style: "solid" },
+      { id: "pc-3", lane: "passport", title: "MC 7", date: "2027-05-18", location: "", color: "#475569", row: "top", style: "solid" },
+      { id: "pc-4", lane: "passport", title: "MC 8", date: "2027-07-20", location: "", color: "#475569", row: "bottom", style: "solid" },
+      { id: "pc-5", lane: "passport", title: "MC 9", date: "2027-09-21", location: "", color: "#475569", row: "top", style: "solid" },
+
+      // Zebra Program
+      { id: "zb-1", lane: "zebra", title: "Zebra Cohort 1", date: "2027-01-21", location: "", color: "#334155", row: "top", style: "solid" },
+      { id: "zb-2", lane: "zebra", title: "Zebra Cohort 2", date: "2027-05-20", location: "", color: "#334155", row: "bottom", style: "solid" },
+
+      // Capital Activation Events (CAE)
+      { id: "cae-1", lane: "cae", title: "CAE New York City", date: "2027-02-01", location: "", color: "#16a34a", row: "top", style: "solid" },
+      { id: "cae-2", lane: "cae", title: "CAE Pittsburgh", date: "2027-04-06", location: "", color: "#16a34a", row: "bottom", style: "solid" },
+      { id: "cae-3", lane: "cae", title: "CAE Chicago", date: "2027-05-11", location: "", color: "#16a34a", row: "top", style: "solid" },
+      { id: "cae-4", lane: "cae", title: "CAE Twin Cities", date: "2027-08-17", location: "", color: "#16a34a", row: "bottom", style: "solid" },
+      { id: "cae-5", lane: "cae", title: "CAE Baltimore", date: "2027-10-05", location: "", color: "#16a34a", row: "top", style: "solid" },
+      { id: "cae-6", lane: "cae", title: "CAE San Diego", date: "2027-10-26", location: "", color: "#16a34a", row: "bottom", style: "solid" },
+
+      // RISE Event
+      { id: "rise-1", lane: "rise", title: "RISE Chicago", date: "2027-05-06", location: "", color: "#475569", row: "top", style: "solid" },
+      { id: "rise-2", lane: "rise", title: "RISE Newark", date: "2027-07-08", location: "", color: "#2563eb", row: "bottom", style: "solid" },
+      { id: "rise-3", lane: "rise", title: "RISE San Diego", date: "2027-10-21", location: "", color: "#2563eb", row: "bottom", style: "solid" },
+      { id: "rise-4", lane: "rise", title: "RISE TBD", date: "2027-12-09", location: "", color: "#92400e", row: "top", style: "solid" },
+
+      // SIFP Grant
+      { id: "sifp-1", lane: "sifp", title: "Q4 2026", date: "2027-01-21", location: "", color: "#0284c7", row: "top", style: "solid" },
+      { id: "sifp-2", lane: "sifp", title: "Q1 2027", date: "2027-04-22", location: "", color: "#0284c7", row: "bottom", style: "solid" },
+      { id: "sifp-3", lane: "sifp", title: "Q2 2027", date: "2027-07-22", location: "", color: "#0284c7", row: "top", style: "solid" },
+      { id: "sifp-4", lane: "sifp", title: "Q3 2027", date: "2027-10-28", location: "", color: "#0284c7", row: "bottom", style: "solid" },
+
+      // National Grant
+      { id: "nat-1", lane: "national", title: "Kitty Fund", date: "2027-05-04", location: "", color: "#f59e0b", row: "top", style: "solid" },
+      { id: "nat-2", lane: "national", title: "Pride Fund", date: "2027-06-29", location: "", color: "#f59e0b", row: "bottom", style: "solid" },
+      { id: "nat-3", lane: "national", title: "Veterans", date: "2027-11-09", location: "", color: "#d97706", row: "top", style: "solid" },
+
+      // WPO Event
+      { id: "wpo-1", lane: "wpo", title: "WPO Summit", date: "2027-05-12", location: "Palm Springs", color: "#78350f", row: "top", style: "solid" }
+    ];
+
+    // State
+    let milestones = JSON.parse(localStorage.getItem('roadmap_milestones_2027')) || [...INITIAL_MILESTONES];
+    let highlightFixes = false;
+    let showThanksgiving = true;
+
+    // Save to local storage
+    function persistState() {
+      localStorage.setItem('roadmap_milestones_2027', JSON.stringify(milestones));
+    }
+
+    // Render the Complete Swimlane Board
+    function renderBoard() {
+      const container = document.getElementById("swimlanesBody");
+      container.innerHTML = "";
+
+      SWIMLANES.forEach((lane) => {
+        // Create Swimlane Row
+        const rowEl = document.createElement("div");
+        rowEl.className = `grid grid-cols-[180px_1fr] swimlane-row ${lane.height} relative group`;
+        rowEl.dataset.laneId = lane.id;
+
+        // Lane Label Column
+        const labelCol = document.createElement("div");
+        labelCol.className = "p-3 border-r-2 border-slate-900 font-bold text-slate-800 text-[13px] flex items-center justify-end text-right pr-4 bg-slate-50/70 select-none leading-snug";
+        labelCol.innerHTML = lane.name;
+        rowEl.appendChild(labelCol);
+
+        // Timeline Area (12 columns background grid)
+        const timelineArea = document.createElement("div");
+        timelineArea.className = "relative h-full grid grid-cols-12 w-full";
+        
+        // 12 column guides
+        for (let m = 0; m < 12; m++) {
+          const colGuide = document.createElement("div");
+          colGuide.className = "month-col h-full";
+          timelineArea.appendChild(colGuide);
+        }
+
+        // Overlay Container for Plotted Milestones
+        const chipsContainer = document.createElement("div");
+        chipsContainer.className = "absolute inset-0 pointer-events-none";
+
+        // Filter Milestones for this lane
+        const laneItems = milestones.filter(m => {
+          if (m.lane !== lane.id) return false;
+          if (m.id === "fp-pause" && !showThanksgiving) return false;
+          return true;
         });
 
-        laneEl.appendChild(track);
-        container.appendChild(laneEl);
+        laneItems.forEach(item => {
+          const day = dateToDayOfYear(item.date);
+          const leftPercent = dayOfYearToPercentage(day);
+
+          const chip = document.createElement("div");
+          chip.className = `milestone-chip pointer-events-auto flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs shadow-sm bg-white cursor-pointer select-none transition-all`;
+          chip.dataset.id = item.id;
+
+          // Vertical Staggering (Top vs Bottom row within swimlane)
+          const verticalOffset = item.row === "bottom" ? "bottom: 10px;" : "top: 10px;";
+          chip.style = `left: ${Math.min(Math.max(leftPercent, 0.5), 92)}%; ${verticalOffset}`;
+
+          // Styling Variations
+          if (item.style === "break") {
+            chip.className += " border-dashed border-amber-400 bg-amber-50/90 text-amber-950 font-medium";
+          } else {
+            chip.className += " border-slate-300 hover:border-slate-400";
+          }
+
+          // Discrepancy Highlighting Mode
+          if (highlightFixes && (item.isCorrected || item.isRestored)) {
+            chip.className += " ring-2 ring-amber-500 ring-offset-1 animate-pulse";
+          }
+
+          // Dot indicator
+          const dot = document.createElement("span");
+          dot.className = "w-2.5 h-2.5 rounded-full flex-shrink-0";
+          dot.style.backgroundColor = item.color || "#16a34a";
+          if (item.style === "break") {
+            dot.className = "w-2.5 h-2.5 rounded flex-shrink-0 bg-amber-500 flex items-center justify-center text-[7px] text-white font-bold";
+            dot.innerHTML = "P";
+          }
+
+          // Text content
+          const textWrap = document.createElement("div");
+          textWrap.className = "leading-tight text-left";
+
+          const titleSpan = document.createElement("div");
+          titleSpan.className = "font-semibold text-slate-800 text-[11px] whitespace-nowrap";
+          titleSpan.innerText = item.title;
+
+          const dateLocSpan = document.createElement("div");
+          dateLocSpan.className = "text-[10px] text-slate-500 font-medium whitespace-nowrap";
+          
+          let dateText = formatDateDisplay(item.date);
+          if (item.endDate) {
+            dateText += ` - ${formatDateDisplay(item.endDate)}`;
+          }
+          if (item.location) {
+            dateText += ` | ${item.location}`;
+          }
+          dateLocSpan.innerText = dateText;
+
+          textWrap.appendChild(titleSpan);
+          textWrap.appendChild(dateLocSpan);
+
+          chip.appendChild(dot);
+          chip.appendChild(textWrap);
+
+          // Click to Edit
+          chip.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openEditModal(item);
+          });
+
+          // Enable Horizontal Dragging along timeline
+          makeDraggable(chip, item);
+
+          chipsContainer.appendChild(chip);
+        });
+
+        timelineArea.appendChild(chipsContainer);
+        rowEl.appendChild(timelineArea);
+        container.appendChild(rowEl);
       });
     }
 
-    function openModal(id) {
-      activeId = id;
-      const ev = events.find(e => e.id === id);
-      document.getElementById('mTitle').value = ev.label;
-      document.getElementById('mDateStr').value = ev.dateStr;
-      document.getElementById('mStart').value = ev.start;
-      document.getElementById('editModal').style.display = 'flex';
+    // Drag-and-Drop Date Positioning
+    function makeDraggable(element, item) {
+      let isDragging = false;
+      let startX = 0;
+      let startLeft = 0;
+
+      element.addEventListener("mousedown", (e) => {
+        if (e.button !== 0) return;
+        isDragging = true;
+        startX = e.clientX;
+        const timelineArea = element.closest(".relative");
+        const rect = timelineArea.getBoundingClientRect();
+        startLeft = parseFloat(element.style.left);
+
+        function onMouseMove(ev) {
+          if (!isDragging) return;
+          const deltaX = ev.clientX - startX;
+          const deltaPercent = (deltaX / rect.width) * 100;
+          let newLeft = Math.max(0.2, Math.min(94, startLeft + deltaPercent));
+          element.style.left = `${newLeft}%`;
+        }
+
+        function onMouseUp(ev) {
+          if (!isDragging) return;
+          isDragging = false;
+          window.removeEventListener("mousemove", onMouseMove);
+          window.removeEventListener("mouseup", onMouseUp);
+
+          // Snap to closest approximate day and update milestone
+          const finalPercent = parseFloat(element.style.left);
+          const approxDay = Math.round((finalPercent / 100) * TOTAL_DAYS);
+
+          // Find month and day
+          let cumulative = 0;
+          let monthIdx = 0;
+          for (let m = 0; m < 12; m++) {
+            if (approxDay < cumulative + DAYS_IN_MONTH_2027[m] || m === 11) {
+              monthIdx = m;
+              break;
+            }
+            cumulative += DAYS_IN_MONTH_2027[m];
+          }
+          const dayOfMonth = Math.min(DAYS_IN_MONTH_2027[monthIdx], Math.max(1, approxDay - cumulative + 1));
+          const monthStr = String(monthIdx + 1).padStart(2, '0');
+          const dayStr = String(dayOfMonth).padStart(2, '0');
+          
+          item.date = `2027-${monthStr}-${dayStr}`;
+          persistState();
+          renderBoard();
+        }
+
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mouseup", onMouseUp);
+      });
     }
 
-    function closeModal() {
-      document.getElementById('editModal').style.display = 'none';
-      activeId = null;
+    // Modal Operations
+    const modal = document.getElementById("milestoneModal");
+    const form = document.getElementById("milestoneForm");
+
+    function openEditModal(item) {
+      document.getElementById("modalTitle").innerHTML = `<i class="fa-solid fa-pen-to-square text-indigo-600"></i> Edit Milestone`;
+      document.getElementById("editMilestoneId").value = item.id;
+      document.getElementById("mTitle").value = item.title;
+      document.getElementById("mLane").value = item.lane;
+      document.getElementById("mDate").value = item.date;
+      document.getElementById("mLocation").value = item.location || "";
+      document.getElementById("mColor").value = item.color || "#16a34a";
+      document.getElementById("colorHexLabel").innerText = item.color || "#16a34a";
+      document.getElementById("mRow").value = item.row || "top";
+      document.getElementById("mStyle").value = item.style || "solid";
+      document.getElementById("deleteMilestoneBtn").classList.remove("hidden");
+      modal.classList.remove("hidden");
     }
 
-    function saveModal() {
-      const ev = events.find(e => e.id === activeId);
-      ev.label = document.getElementById('mTitle').value;
-      ev.dateStr = document.getElementById('mDateStr').value;
-      ev.start = document.getElementById('mStart').value;
-      localStorage.setItem('2027_calendar_events', JSON.stringify(events));
-      closeModal();
-      render();
+    function openNewModal() {
+      document.getElementById("modalTitle").innerHTML = `<i class="fa-solid fa-plus text-indigo-600"></i> Add New Milestone`;
+      document.getElementById("editMilestoneId").value = "";
+      document.getElementById("mTitle").value = "";
+      document.getElementById("mLane").value = "fastpath";
+      document.getElementById("mDate").value = "2027-06-15";
+      document.getElementById("mLocation").value = "";
+      document.getElementById("mColor").value = "#16a34a";
+      document.getElementById("colorHexLabel").innerText = "#16a34a";
+      document.getElementById("mRow").value = "top";
+      document.getElementById("mStyle").value = "solid";
+      document.getElementById("deleteMilestoneBtn").classList.add("hidden");
+      modal.classList.remove("hidden");
     }
 
-    function resetDefaults() {
-      localStorage.removeItem('2027_calendar_events');
-      events = JSON.parse(JSON.stringify(RAW_EVENTS));
-      render();
-    }
+    document.getElementById("closeModalBtn").onclick = () => modal.classList.add("hidden");
+    document.getElementById("cancelModalBtn").onclick = () => modal.classList.add("hidden");
+    document.getElementById("openAddModalBtn").onclick = openNewModal;
 
-    function exportData() {
-      const blob = new Blob([JSON.stringify(events, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = '2027-calendar-events.json';
-      a.click();
-    }
+    document.getElementById("mColor").oninput = (e) => {
+      document.getElementById("colorHexLabel").innerText = e.target.value;
+    };
 
-    init();
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const id = document.getElementById("editMilestoneId").value;
+      const title = document.getElementById("mTitle").value;
+      const lane = document.getElementById("mLane").value;
+      const date = document.getElementById("mDate").value;
+      const location = document.getElementById("mLocation").value;
+      const color = document.getElementById("mColor").value;
+      const row = document.getElementById("mRow").value;
+      const style = document.getElementById("mStyle").value;
+
+      if (id) {
+        // Update existing
+        const idx = milestones.findIndex(m => m.id === id);
+        if (idx !== -1) {
+          milestones[idx] = { ...milestones[idx], title, lane, date, location, color, row, style };
+        }
+      } else {
+        // Add new
+        const newId = "m-" + Date.now();
+        milestones.push({ id: newId, title, lane, date, location, color, row, style });
+      }
+
+      persistState();
+      renderBoard();
+      modal.classList.add("hidden");
+    };
+
+    document.getElementById("deleteMilestoneBtn").onclick = () => {
+      const id = document.getElementById("editMilestoneId").value;
+      if (confirm("Are you sure you want to remove this milestone from the roadmap?")) {
+        milestones = milestones.filter(m => m.id !== id);
+        persistState();
+        renderBoard();
+        modal.classList.add("hidden");
+      }
+    };
+
+    // Toggle Discrepancy Highlights
+    const toggleFixesBtn = document.getElementById("toggleFixesBtn");
+    toggleFixesBtn.onclick = () => {
+      highlightFixes = !highlightFixes;
+      document.getElementById("fixesBtnText").innerText = highlightFixes ? "Clear Fix Highlights" : "Show Discrepancy Highlights";
+      renderBoard();
+    };
+
+    // Toggle Thanksgiving Break
+    const toggleBreakBtn = document.getElementById("toggleBreakBtn");
+    toggleBreakBtn.onclick = () => {
+      showThanksgiving = !showThanksgiving;
+      document.getElementById("breakBtnText").innerText = showThanksgiving ? "Hide Thanksgiving Break" : "Show Thanksgiving Break";
+      renderBoard();
+    };
+
+    // Slide / Presentation Mode
+    const presBtn = document.getElementById("presentationModeBtn");
+    presBtn.onclick = () => {
+      const slide = document.getElementById("roadmapSlide");
+      if (!document.fullscreenElement) {
+        slide.requestFullscreen().catch(err => {
+          alert(`Error attempting fullscreen mode: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    };
+
+    // Export Dropdown
+    const exportBtn = document.getElementById("exportDropdownBtn");
+    const exportMenu = document.getElementById("exportMenu");
+    exportBtn.onclick = (e) => {
+      e.stopPropagation();
+      exportMenu.classList.toggle("hidden");
+    };
+    window.onclick = () => exportMenu.classList.add("hidden");
+
+    // Print / PDF
+    document.getElementById("printPdfBtn").onclick = () => {
+      window.print();
+    };
+
+    // Export to TSV
+    document.getElementById("exportTsvBtn").onclick = () => {
+      let tsvContent = "Program\tTitle\tStart Date\tLocation\tIndicator Color\n";
+      milestones.forEach(m => {
+        tsvContent += `${m.lane}\t${m.title}\t${m.date}\t${m.location || ""}\t${m.color}\n`;
+      });
+      const blob = new Blob([tsvContent], { type: "text/tab-separated-values;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "2027_Strategic_Roadmap_Planner_Export.tsv";
+      link.click();
+    };
+
+    // Reset Data
+    document.getElementById("resetDataBtn").onclick = () => {
+      if (confirm("Reset roadmap back to the ClickUp TSV master baseline?")) {
+        milestones = JSON.parse(JSON.stringify(INITIAL_MILESTONES));
+        persistState();
+        renderBoard();
+      }
+    };
+
+    // Initial Render
+    renderBoard();
   </script>
 </body>
 </html>
